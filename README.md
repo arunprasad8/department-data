@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CIA Dashboard - Role-Based Access Control System
 
 ## Project Overview
@@ -257,3 +258,6 @@ For issues or questions about the CIA Dashboard system, please refer to the cred
 **Version:** 1.0  
 **Last Updated:** December 2024  
 **Status:** Active
+=======
+# department-data
+>>>>>>> f62b8cd47b9624dd5361e351043fa9a42e27fb18
