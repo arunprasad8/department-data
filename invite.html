@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Join Class</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f9;padding:20px} 
+    .card{background:#fff;padding:24px;border-radius:8px;max-width:720px;margin:0 auto; border-top: 4px solid #d4af37; box-shadow: 0 4px 12px rgba(0,0,0,0.08);} 
+    h2 { color: #002147; }
+    .muted{color:#666;font-size:0.9em}
+    button[type="submit"] { background-color: #002147 !important; color: #fff !important; font-weight: 600; transition: background 0.2s; }
+    button[type="submit"]:hover { background-color: #003366 !important; }
+    input:focus { border-color: #002147; outline: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="class-name">Loading...</h2>
+    <div id="class-desc" class="muted"></div>
+    <div id="invite-message" style="margin-top:12px;color:#333"></div>
+    <hr>
+    <form id="join-form">
+      <div style="margin-bottom:8px"><label>Your name</label><br><input id="inp-name" type="text" required style="width:100%;padding:8px"></div>
+      <div style="margin-bottom:8px"><label>Your email</label><br><input id="inp-email" type="email" required style="width:100%;padding:8px"></div>
+      <div style="margin-bottom:8px"><label>Upload assignment</label><br><input id="inp-file" type="file" required></div>
+      <button type="submit" style="padding:8px 12px;background:#007bff;color:#fff;border:none;border-radius:4px;cursor:pointer">Upload & Join</button>
+    </form>
+    <div id="status" style="margin-top:12px"></div>
+  </div>
+<script>
+(async function(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const urlTitle = params.get('title');
+  const statusEl = document.getElementById('status');
+  if (!token) { document.getElementById('class-name').textContent = 'Invalid invite link'; return; }
+  try {
+    const r = await fetch('/api/local/invite?token=' + encodeURIComponent(token));
+    const j = await r.json();
+    if (!j.ok) throw new Error('Invite not found');
+    document.getElementById('class-name').textContent = j.class ? j.class.name : (urlTitle || 'Class');
+    document.getElementById('class-desc').textContent = j.class ? j.class.description : '';
+    document.getElementById('invite-message').textContent = j.invite && j.invite.message ? j.invite.message : '';
+  } catch (e) { 
+    if (urlTitle) {
+      document.getElementById('class-name').textContent = urlTitle;
+      document.getElementById('invite-message').textContent = 'Please upload your assignment file below.';
+    } else {
+      document.getElementById('class-name').textContent = 'Invite not found'; console.warn(e); 
+    }
+  }
+
+  const form = document.getElementById('join-form');
+  form.addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    const name = document.getElementById('inp-name').value.trim();
+    const email = document.getElementById('inp-email').value.trim();
+    const file = document.getElementById('inp-file').files[0];
+    if (!name || !email || !file) return alert('Please fill all fields');
+    const fd = new FormData();
+    fd.append('token', token);
+    fd.append('name', name);
+    fd.append('email', email);
+    fd.append('file', file);
+    statusEl.textContent = 'Uploading...';
+    try {
+      const up = await fetch('/api/local/upload', { method: 'POST', body: fd });
+      const res = await up.json();
+      if (res.ok) {
+        statusEl.innerHTML = '<div style="color:green">Uploaded successfully. Thank you!</div>';
+      } else {
+        statusEl.innerHTML = '<div style="color:red">Upload failed: ' + (res.error || JSON.stringify(res)) + '</div>';
+      }
+    } catch (e) { 
+      // Fallback: Simulate upload for demo purposes if backend is missing
+      console.warn('Backend not reachable, using localStorage simulation.');
+      const subs = JSON.parse(localStorage.getItem('mock_submissions') || '[]');
+      subs.push({
+        token: token,
+        name: name,
+        email: email,
+        filename: file.name,
+        date: new Date().toLocaleString()
+      });
+      localStorage.setItem('mock_submissions', JSON.stringify(subs));
+      statusEl.innerHTML = '<div style="color:green">Uploaded successfully (Demo Mode).</div>';
+    }
+  });
+})();
+</script>
+</body>
+</html>

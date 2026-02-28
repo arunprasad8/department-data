@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIA Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CIA Dashboard </h1>
+            <p>Upload your Excel sheet and enter the subject name to generate the dashboard.</p>
+        </header>
+
+        <div id="upload-section">
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="subject-input">Subject Name:</label>
+                    <input type="text" id="subject-input" placeholder="e.g., English" required>
+                </div>
+                <div class="form-group">
+                    <label for="max-marks-input">Max Marks (Out of):</label>
+                    <input type="number" id="max-marks-input" placeholder="e.g., 100" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="file-input">Upload Excel File (.xlsx or .xls):</label>
+                    <input type="file" id="file-input" accept=".xlsx,.xls" required>
+                </div>
+                <button type="submit">Process Data</button>
+            </form>
+            <div id="loading" style="display: none;">Processing...</div>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <button id="reset-btn">Upload New Data</button>
+            <h2 id="dashboard-title">Dashboard for <span id="selected-subject"></span></h2>
+
+            <section id="stats-section">
+                <h3>Basic Statistics</h3>
+                <table id="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Not Attended</td><td id="not-attended">-</td></tr>
+                        <tr><td>MIN</td><td id="min-score">-</td></tr>
+                        <tr><td>MAX</td><td id="max-score">-</td></tr>
+                        <tr><td>AVG</td><td id="avg-score">-</td></tr>
+                        <tr><td>STDEV</td><td id="stdev-score">-</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="bins-section">
+                <h3>Performance Distribution (%)</h3>
+                <table id="bins-table">
+                    <thead>
+                        <tr>
+                            <th>Range</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>&ge;90%</td><td id="bin-90">-</td><td id="pct-90">-</td></tr>
+                        <tr><td>85% - 89%</td><td id="bin-85">-</td><td id="pct-85">-</td></tr>
+                        <tr><td>80% - 84%</td><td id="bin-80">-</td><td id="pct-80">-</td></tr>
+                        <tr><td>75% - 79%</td><td id="bin-75">-</td><td id="pct-75">-</td></tr>
+                        <tr><td>70% - 74%</td><td id="bin-70">-</td><td id="pct-70">-</td></tr>
+                        <tr><td>65% - 69%</td><td id="bin-65">-</td><td id="pct-65">-</td></tr>
+                        <tr><td>60% - 64%</td><td id="bin-60">-</td><td id="pct-60">-</td></tr>
+                        <tr><td>50% - 59%</td><td id="bin-50">-</td><td id="pct-50">-</td></tr>
+                        <tr><td>40% - 49%</td><td id="bin-40">-</td><td id="pct-40">-</td></tr>
+                        <tr><td>< 40%</td><td id="bin-below40">-</td><td id="pct-below40">-</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="risk-section">
+                <h3>Performance Measure</h3>
+                <div class="avg-display">
+                    <strong>Average Score: <span id="avg-display">-</span></strong>
+                </div>
+                <canvas id="risk-chart" width="400" height="200"></canvas>
+            </section>
+
+            <section id="bins-chart-section">
+                <h3>Performance Distribution Chart</h3>
+                <canvas id="bins-chart" width="600" height="300"></canvas>
+            </section>
+
+            <section id="student-chart-section">
+                <h3>Individual Student Marks</h3>
+                <p>Passing Mark: 20/100 (horizontal line)</p>
+                <canvas id="student-chart" width="800" height="400"></canvas>
+            </section>
+
+            <div id="critical-students" style="display: none;">
+                <section id="critical-section">
+                    <h3>Low-Performing Students (Score < 20)</h3>
+                    <table id="low-students-table">
+                        <thead>
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Name</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="low-students-body">
+                        </tbody>
+                    </table>
+                    <div id="improvement-solutions">
+                        <h4>Possible Solutions to Improve Scores:</h4>
+                        <ul>
+                            <li>Conduct one-on-one remedial sessions focusing on weak areas.</li>
+                            <li>Assign additional practice materials and monitor progress weekly.</li>
+                            <li>Involve parents for home support and motivation.</li>
+                            <li>Reassess teaching methods; incorporate interactive learning tools.</li>
+                            <li>Provide extra classes or peer tutoring for foundational gaps.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

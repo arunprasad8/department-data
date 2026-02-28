@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Links for Students</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .assignments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .assignment-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .assignment-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .assignment-card.proactive {
+            border-left: 4px solid #667eea;
+        }
+
+        .assignment-card.reactive {
+            border-left: 4px solid #f5576c;
+        }
+
+        .assignment-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .type-proactive {
+            background: #e7f0ff;
+            color: #667eea;
+        }
+
+        .type-reactive {
+            background: #ffe7e7;
+            color: #f5576c;
+        }
+
+        .assignment-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .assignment-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .assignment-link-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .link-label {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .link-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .link-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            background: #f9f9f9;
+        }
+
+        .link-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .btn-copy {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: #764ba2;
+        }
+
+        .btn-open {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-open:hover {
+            background: #218838;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .due-date {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Assignment Links</h1>
+            <p>Share these links with students to submit assignments</p>
+        </div>
+
+        <div id="assignments-container" class="loading">
+            Loading assignments...
+        </div>
+    </div>
+
+    <script>
+        async function loadAssignments() {
+            try {
+                const response = await fetch('/api/local/assignments');
+                const data = await response.json();
+                const assignments = data.assignments || [];
+
+                if (assignments.length === 0) {
+                    document.getElementById('assignments-container').innerHTML = `
+                        <div class="error">
+                            ❌ No assignments found. Create and seed assignments first.
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Sort by type (proactive first)
+                assignments.sort((a, b) => {
+                    const typeOrder = { 'proactive': 0, 'reactive': 1 };
+                    return (typeOrder[a.type] || 2) - (typeOrder[b.type] || 2);
+                });
+
+                const html = assignments.map(assignment => {
+                    const studentLink = `${window.location.origin}/student-submission.html?token=${assignment.token}`;
+                    const typeClass = assignment.type === 'proactive' ? 'proactive' : 'reactive';
+                    const typeLabel = assignment.type === 'proactive' ? '🔵 Proactive' : '🔴 Reactive';
+                    const typeEmoji = assignment.type === 'proactive' ? 'type-proactive' : 'type-reactive';
+                    
+                    const dueDate = new Date(assignment.dueDate);
+                    const dueDateStr = dueDate.toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+
+                    return `
+                        <div class="assignment-card ${typeClass}">
+                            <div class="assignment-type ${typeEmoji}">
+                                ${typeLabel}
+                            </div>
+                            
+                            <h3 class="assignment-title">${assignment.title}</h3>
+                            
+                            <div class="assignment-meta">
+                                <span>Max Marks: <strong>${assignment.maxMarks || 100}</strong></span>
+                                <span>Students: <strong>${(assignment.assignedStudents || []).length}</strong></span>
+                            </div>
+                            
+                            <div class="due-date">
+                                📅 Due: ${dueDateStr}
+                            </div>
+
+                            <div class="assignment-link-section">
+                                <div class="link-label">🔗 Student Submission Link</div>
+                                <div class="link-input-group">
+                                    <input type="text" class="link-input" readonly value="${studentLink}" onclick="this.select()">
+                                    <button class="btn-copy" onclick="copyLink('${studentLink}')">Copy</button>
+                                </div>
+                                <button class="btn-open" onclick="openLink('${studentLink}')">
+                                    👉 Test Link
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('assignments-container').innerHTML = `
+                    <div class="assignments-grid">
+                        ${html}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading assignments:', error);
+                document.getElementById('assignments-container').innerHTML = `
+                    <div class="error">
+                        ❌ Error loading assignments: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function copyLink(link) {
+            navigator.clipboard.writeText(link).then(() => {
+                alert('✓ Link copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy. Please copy manually from the input field.');
+            });
+        }
+
+        function openLink(link) {
+            window.open(link, '_blank');
+        }
+
+        // Load assignments when page loads
+        document.addEventListener('DOMContentLoaded', loadAssignments);
+    </script>
+</body>
+</html>

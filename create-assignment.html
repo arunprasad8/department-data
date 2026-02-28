@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Assignment - CIA Classroom</title>
+    <style>
+        :root {
+            --christ-blue: #002147;
+            --christ-gold: #d4af37;
+            --christ-white: #ffffff;
+            --bg-light: #f4f6f9;
+            --success-green: #28a745;
+            --proactive-green: #20c997;
+            --reactive-orange: #fd7e14;
+            --reactive-red: #dc3545;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(to right, var(--christ-blue), #003366);
+            color: var(--christ-white);
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 4px solid var(--christ-gold);
+        }
+        .header h1 { margin: 0; color: var(--christ-white); }
+        .header p { margin: 5px 0 0 0; color: var(--christ-gold); }
+        
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            padding: 20px 40px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            flex: 1;
+            position: relative;
+        }
+        .step-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e9ecef;
+            z-index: 0;
+        }
+        .step-item.completed:not(:last-child)::after {
+            background: var(--success-green);
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+        .step-item.active .step-circle {
+            background: var(--christ-blue);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(0,33,71,0.2);
+        }
+        .step-item.completed .step-circle {
+            background: var(--success-green);
+            color: white;
+        }
+        .step-label {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .step-item.active .step-label,
+        .step-item.completed .step-label {
+            color: var(--christ-blue);
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--christ-white);
+            border-radius: 0 0 12px 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Form Elements */
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+        }
+        .required::after { content: ' *'; color: var(--reactive-red); }
+        
+        input[type="text"], input[type="date"], input[type="time"], 
+        input[type="number"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--christ-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,33,71,0.1);
+        }
+        textarea { resize: vertical; min-height: 100px; }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background-color: var(--christ-blue);
+            color: var(--christ-white);
+        }
+        .btn-primary:hover { background-color: #003366; transform: translateY(-1px); }
+        .btn-success { background-color: var(--success-green); color: white; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-outline { background: transparent; border: 2px solid var(--christ-blue); color: var(--christ-blue); }
+        .btn-outline:hover { background: var(--christ-blue); color: white; }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        /* Step Sections */
+        .step-section { display: none; }
+        .step-section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Target Selection Cards */
+        .target-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .target-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .target-card:hover { border-color: var(--christ-blue); transform: translateY(-2px); }
+        .target-card.selected {
+            border-color: var(--christ-blue);
+            background: rgba(0,33,71,0.05);
+        }
+        .target-card h4 { margin: 0 0 8px 0; color: var(--christ-blue); display: flex; align-items: center; gap: 8px; }
+        .target-card p { margin: 0; color: #666; font-size: 13px; }
+
+        /* Performance Type Selection */
+        .performance-type {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .perf-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .perf-card:hover { transform: translateY(-2px); }
+        .perf-card.proactive { border-color: var(--proactive-green); }
+        .perf-card.proactive:hover, .perf-card.proactive.selected {
+            background: rgba(32, 201, 151, 0.1);
+            border-color: var(--proactive-green);
+        }
+        .perf-card.reactive { border-color: var(--reactive-orange); }
+        .perf-card.reactive:hover, .perf-card.reactive.selected {
+            background: rgba(253, 126, 20, 0.1);
+            border-color: var(--reactive-orange);
+        }
+        .perf-card .icon { font-size: 40px; margin-bottom: 10px; }
+        .perf-card h3 { margin: 0 0 8px 0; }
+        .perf-card p { margin: 0; color: #666; font-size: 13px; }
+
+        /* Assignment Type Grid */
+        .assignment-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .assignment-type-option {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .assignment-type-option:hover { border-color: var(--christ-blue); }
+        .assignment-type-option.selected {
+            border-color: var(--christ-blue);
+            background: rgba(0,33,71,0.05);
+        }
+        .assignment-type-option .icon { font-size: 28px; margin-bottom: 8px; }
+        .assignment-type-option .label { font-weight: 600; color: var(--christ-blue); }
+
+        /* Dynamic Fields */
+        .dynamic-fields {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+        }
+        .dynamic-fields h3 {
+            margin: 0 0 20px 0;
+            color: var(--christ-blue);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .field-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .field-group.single { grid-template-columns: 1fr; }
+
+        /* Review Section */
+        .review-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 24px;
+        }
+        .review-item {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .review-item:last-child { border-bottom: none; }
+        .review-label {
+            font-weight: 600;
+            width: 180px;
+            color: #666;
+        }
+        .review-value { flex: 1; color: #333; }
+
+        /* Success Message */
+        .success-message {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .success-message .icon { font-size: 48px; margin-bottom: 10px; }
+        .success-message h3 { margin: 0 0 10px 0; }
+
+        /* Student Multi-select */
+        .student-multi-select {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .student-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .student-checkbox:hover { background: #f8f9fa; }
+        .student-checkbox input { margin-right: 10px; }
+
+        /* Hidden */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Create Assignment</h1>
+            <p>Create and manage classroom assignments</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step-item active" id="step1-indicator">
+                <div class="step-circle">1</div>
+                <div class="step-label">Select Students</div>
+            </div>
+            <div class="step-item" id="step2-indicator">
+                <div class="step-circle">2</div>
+                <div class="step-label">Assignment Type</div>
+            </div>
+            <div class="step-item" id="step3-indicator">
+                <div class="step-circle">3</div>
+                <div class="step-label">Fill Details</div>
+            </div>
+            <div class="step-item" id="step4-indicator">
+                <div class="step-circle">4</div>
+                <div class="step-label">Review & Publish</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <form id="assignmentForm">
+                <!-- Step 1: Select Target Students -->
+                <div class="step-section active" id="step1">
+                    <h2>Step 1: Select Target Students</h2>
+                    <p style="color:#666; margin-bottom:20px;">Choose who this assignment should be assigned to:</p>
+                    
+                    <div class="target-options">
+                        <div class="target-card selected" data-value="entire-class" onclick="selectTarget('entire-class')">
+                            <h4>📚 Entire Class</h4>
+                            <p>Assign to all students in the selected class</p>
+                        </div>
+                        <div class="target-card" data-value="selected-students" onclick="selectTarget('selected-students')">
+                            <h4>👥 Selected Students</h4>
+                            <p>Choose specific students from the class</p>
+                        </div>
+                        <div class="target-card" data-value="performance-based" onclick="selectTarget('performance-based')">
+                            <h4>📊 By Performance</h4>
+                            <p>Assign based on performance type</p>
+                        </div>
+                    </div>
+
+                    <!-- Selected Students Multi-select -->
+                    <div id="selectedStudentsSection" class="hidden">
+                        <label>Select Students</label>
+                        <div class="student-multi-select" id="studentList">
+                            <p style="color:#666; text-align:center;">Select a class first</p>
+                        </div>
+                    </div>
+
+                    <!-- Performance Type Selection -->
+                    <div id="performanceSection" class="hidden">
+                        <label>Select Performance Type</label>
+                        <div class="performance-type">
+                            <div class="perf-card proactive" onclick="selectPerformance('proactive')">
+                                <div class="icon">🚀</div>
+                                <h3>Proactive Students</h3>
+                                <p>High-performing BCA students with good marks (≥60%)</p>
+                            </div>
+                            <div class="perf-card reactive" onclick="selectPerformance('reactive')">
+                                <div class="icon">📖</div>
+                                <h3>Reactive Students</h3>
+                                <p>Students who need improvement (<60%)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-primary" onclick="goToStep(2)">Next Step →</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Assignment Type -->
+                <div class="step-section" id="step2">
+                    <h2>Step 2: Select Assignment Type</h2>
+                    <p style="color:#666; margin-bottom:20px;">Choose the type of assignment based on student category:</p>
+
+                    <div id="proactiveTypes" class="assignment-type-grid">
+                        <div class="assignment-type-option" onclick="selectAssignmentType('research-paper')">
+                            <div class="icon">📄</div>
+                            <div class="label">Research Paper</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('workshop')">
+                            <div class="icon">🔧</div>
+                            <div class="label">Workshop</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('hackathon')">
+                            <div class="icon">💻</div>
+                            <div class="label">Hackathon</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('mini-project')">
+                            <div class="icon">🎯</div>
+                            <div class="label">Mini Project</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('major-project')">
+                            <div class="icon">🏆</div>
+                            <div class="label">Major Project</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('case-study')">
+                            <div class="icon">📋</div>
+                            <div class="label">Case Study</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('certification')">
+                            <div class="icon">📜</div>
+                            <div class="label">Certification</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('coding-challenge')">
+                            <div class="icon">⚡</div>
+                            <div class="label">Coding Challenge</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('open-source')">
+                            <div class="icon">🌐</div>
+                            <div class="label">Open Source</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('internship')">
+                            <div class="icon">💼</div>
+                            <div class="label">Internship Task</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('seminar')">
+                            <div class="icon">🎤</div>
+                            <div class="label">Seminar</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('blog')">
+                            <div class="icon">✍️</div>
+                            <div class="label">Tech Blog</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('prototype')">
+                            <div class="icon">🔬</div>
+                            <div class="label">Prototype</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('app-dev')">
+                            <div class="icon">📱</div>
+                            <div class="label">App Development</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('gd-lead')">
+                            <div class="icon">👥</div>
+                            <div class="label">GD Lead</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('innovation')">
+                            <div class="icon">💡</div>
+                            <div class="label">Innovation</div>
+                        </div>
+                    </div>
+
+                    <div id="reactiveTypes" class="assignment-type-grid hidden">
+                        <div class="assignment-type-option" onclick="selectAssignmentType('remedial')">
+                            <div class="icon">📖</div>
+                            <div class="label">Remedial Assignment</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('practice')">
+                            <div class="icon">✏️</div>
+                            <div class="label">Practice Worksheet</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('basic-seminar')">
+                            <div class="icon">🎤</div>
+                            <div class="label">Basic Seminar</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('doubt')">
+                            <div class="icon">❓</div>
+                            <div class="label">Doubt Session</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('basic-coding')">
+                            <div class="icon">💻</div>
+                            <div class="label">Basic Coding</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('retest')">
+                            <div class="icon">🔄</div>
+                            <div class="label">Re-test</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('viva')">
+                            <div class="icon">🗣️</div>
+                            <div class="label">Viva</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('guided-project')">
+                            <div class="icon">🎯</div>
+                            <div class="label">Guided Mini Project</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('lab-practice')">
+                            <div class="icon">🧪</div>
+                            <div class="label">Lab Practice</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('peer-learning')">
+                            <div class="icon">👥</div>
+                            <div class="label">Peer Learning</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('basic-presentation')">
+                            <div class="icon">📊</div>
+                            <div class="label">Basic Presentation</div>
+                        </div>
+                        <div class="assignment-type-option" onclick="selectAssignmentType('recorded-exp')">
+                            <div class="icon">🎥</div>
+                            <div class="label">Recorded Explanation</div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                        <button type="button" class="btn btn-primary" onclick="goToStep(3)">Next Step →</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Fill Details -->
+                <div class="step-section" id="step3">
+                    <h2>Step 3: Fill Assignment Details</h2>
+                    
+                    <!-- Common Fields -->
+                    <div class="field-group single">
+                        <div class="form-group">
+                            <label class="required">Assignment Title</label>
+                            <input type="text" id="assignmentTitle" placeholder="Enter assignment title">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <div class="form-group">
+                            <label class="required">Subject</label>
+                            <input type="text" id="subject" placeholder="e.g., Data Structures">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="description" placeholder="Assignment description"></textarea>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" id="dueDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Marks / Weightage</label>
+                            <input type="number" id="maxMarks" placeholder="e.g., 100">
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Fields Based on Assignment Type -->
+                    <div id="dynamicFieldsContainer"></div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                        <button type="button" class="btn btn-primary" onclick="goToStep(4)">Review →</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review & Publish -->
+                <div class="step-section" id="step4">
+                    <h2>Step 4: Review & Publish</h2>
+                    <p style="color:#666;">Review your assignment before publishing:</p>
+
+                    <div class="review-section" id="reviewContent">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="goToStep(3)">← Back</button>
+                        <button type="button" class="btn btn-success" onclick="submitAssignment()">✅ Publish Assignment</button>
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="hidden">
+                    <div class="success-message">
+                        <div class="icon">🎉</div>
+                        <h3>Assignment Created Successfully!</h3>
+                        <p>The assignment has been published to the selected students.</p>
+                        <button type="button" class="btn btn-primary" onclick="resetForm()">Create Another Assignment</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================== State Management ====================
+        let formData = {
+            targetType: 'entire-class',
+            classId: '',
+            selectedStudents: [],
+            performanceType: '',
+            assignmentType: '',
+            title: '',
+            subject: '',
+            description: '',
+            dueDate: '',
+            maxMarks: '',
+            dynamicFields: {}
+        };
+
+        let allStudents = [];
+
+        // ==================== Dynamic Field Definitions ====================
+        const dynamicFieldConfigs = {
+            // Proactive Types
+            'research-paper': {
+                title: 'Research Paper Details',
+                fields: [
+                    { name: 'researchTopic', label: 'Research Topic', type: 'text', placeholder: 'Enter research topic' },
+                    { name: 'domain', label: 'Domain', type: 'select', options: ['AI', 'Data Science', 'Cybersecurity', 'Cloud Computing', 'IoT', 'Web Development', 'Mobile Computing', 'Other'] },
+                    { name: 'abstractDeadline', label: 'Abstract Submission Deadline', type: 'date' },
+                    { name: 'finalDeadline', label: 'Final Submission Deadline', type: 'date' },
+                    { name: 'format', label: 'Format Guidelines', type: 'select', options: ['IEEE', 'APA', 'MLA', 'Chicago', 'Custom'] },
+                    { name: 'plagiarismLimit', label: 'Plagiarism Limit (%)', type: 'number', placeholder: 'e.g., 15' },
+                    { name: 'minReferences', label: 'Minimum References', type: 'number', placeholder: 'e.g., 5' },
+                    { name: 'teamSize', label: 'Team Size', type: 'number', placeholder: '1 for individual' },
+                    { name: 'submissionType', label: 'Submission Type', type: 'select', options: ['PDF', 'Word Document', 'Both'] }
+                ]
+            },
+            'workshop': {
+                title: 'Workshop Details',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text', placeholder: 'Workshop topic' },
+                    { name: 'venue', label: 'Venue', type: 'text', placeholder: 'e.g., Computer Lab 1' },
+                    { name: 'resourcePerson', label: 'Resource Person', type: 'text', placeholder: 'Name of resource person' },
+                    { name: 'date', label: 'Date', type: 'date' },
+                    { name: 'time', label: 'Time', type: 'time' },
+                    { name: 'duration', label: 'Duration (hours)', type: 'number', placeholder: 'e.g., 4' },
+                    { name: 'maxParticipants', label: 'Max Participants', type: 'number', placeholder: 'e.g., 30' },
+                    { name: 'materials', label: 'Required Materials', type: 'textarea', placeholder: 'List required materials' },
+                    { name: 'submissionType', label: 'Submission Type', type: 'select', options: ['None', 'Report', 'Presentation', 'Certificate Upload'] }
+                ]
+            },
+            'hackathon': {
+                title: 'Hackathon Details',
+                fields: [
+                    { name: 'theme', label: 'Theme', type: 'text', placeholder: 'Hackathon theme' },
+                    { name: 'problemStatement', label: 'Problem Statement', type: 'textarea', placeholder: 'Describe the problem' },
+                    { name: 'date', label: 'Start Date', type: 'date' },
+                    { name: 'endDate', label: 'End Date', type: 'date' },
+                    { name: 'teamSize', label: 'Team Size', type: 'number', placeholder: 'e.g., 4' },
+                    { name: 'venue', label: 'Venue', type: 'text' },
+                    { name: 'submissionLink', label: 'Submission Link Field', type: 'text', placeholder: 'GitHub/Demo link' },
+                    { name: 'evaluationCriteria', label: 'Evaluation Criteria', type: 'textarea' },
+                    { name: 'prize', label: 'Prize/Credits', type: 'text' },
+                    { name: 'mentor', label: 'Mentor Assigned', type: 'text' }
+                ]
+            },
+            'mini-project': {
+                title: 'Mini Project Details',
+                fields: [
+                    { name: 'projectTitle', label: 'Project Title', type: 'text' },
+                    { name: 'objectives', label: 'Objectives', type: 'textarea' },
+                    { name: 'techStack', label: 'Technology Stack', type: 'text', placeholder: 'e.g., Python, Django' },
+                    { name: 'startDate', label: 'Start Date', type: 'date' },
+                    { name: 'deadline', label: 'Deadline', type: 'date' },
+                    { name: 'teamSize', label: 'Team Size', type: 'number' },
+                    { name: 'deliverables', label: 'Deliverables', type: 'textarea' }
+                ]
+            },
+            'major-project': {
+                title: 'Major Project Details',
+                fields: [
+                    { name: 'projectTitle', label: 'Project Title', type: 'text' },
+                    { name: 'domain', label: 'Domain', type: 'text' },
+                    { name: 'objectives', label: 'Objectives', type: 'textarea' },
+                    { name: 'methodology', label: 'Methodology', type: 'textarea' },
+                    { name: 'startDate', label: 'Start Date', type: 'date' },
+                    { name: 'midReview', label: 'Mid Review Date', type: 'date' },
+                    { name: 'finalDeadline', label: 'Final Deadline', type: 'date' },
+                    { name: 'teamSize', label: 'Team Size', type: 'number' },
+                    { name: 'guide', label: 'Project Guide', type: 'text' }
+                ]
+            },
+            'case-study': {
+                title: 'Case Study Details',
+                fields: [
+                    { name: 'caseTitle', label: 'Case Title', type: 'text' },
+                    { name: 'description', label: 'Case Description', type: 'textarea' },
+                    { name: 'objectives', label: 'Learning Objectives', type: 'textarea' },
+                    { name: 'deadline', label: 'Submission Deadline', type: 'date' },
+                    { name: 'wordLimit', label: 'Word Limit', type: 'number' },
+                    { name: 'questions', label: 'Questions to Answer', type: 'textarea' }
+                ]
+            },
+            'certification': {
+                title: 'Certification Details',
+                fields: [
+                    { name: 'certName', label: 'Certification Name', type: 'text' },
+                    { name: 'provider', label: 'Provider', type: 'text', placeholder: 'e.g., AWS, Google, Microsoft' },
+                    { name: 'validity', label: 'Validity Period', type: 'text', placeholder: 'e.g., 2 years' },
+                    { name: 'deadline', label: 'Completion Deadline', type: 'date' },
+                    { name: 'resources', label: 'Study Resources', type: 'textarea' }
+                ]
+            },
+            'coding-challenge': {
+                title: 'Coding Challenge Details',
+                fields: [
+                    { name: 'platform', label: 'Platform', type: 'select', options: ['HackerRank', 'CodeChef', 'LeetCode', 'Other'] },
+                    { name: 'challengeLink', label: 'Challenge Link', type: 'text' },
+                    { name: 'startDate', label: 'Start Date', type: 'date' },
+                    { name: 'endDate', label: 'End Date', type: 'date' },
+                    { name: 'difficulty', label: 'Difficulty', type: 'select', options: ['Easy', 'Medium', 'Hard'] },
+                    { name: 'problemsCount', label: 'Number of Problems', type: 'number' }
+                ]
+            },
+            'open-source': {
+                title: 'Open Source Contribution',
+                fields: [
+                    { name: 'repository', label: 'Repository Link', type: 'text' },
+                    { name: 'issue', label: 'Issue/Ticket', type: 'text' },
+                    { name: 'description', label: 'Task Description', type: 'textarea' },
+                    { name: 'deadline', label: 'Deadline', type: 'date' },
+                    { name: 'prRequired', label: 'PR Required', type: 'select', options: ['Yes', 'No'] }
+                ]
+            },
+            'internship': {
+                title: 'Internship Task Details',
+                fields: [
+                    { name: 'company', label: 'Company Name', type: 'text' },
+                    { name: 'role', label: 'Role', type: 'text' },
+                    { name: 'startDate', label: 'Start Date', type: 'date' },
+                    { name: 'endDate', label: 'End Date', type: 'date' },
+                    { name: 'tasks', label: 'Tasks Assigned', type: 'textarea' },
+                    { name: 'mentor', label: 'Company Mentor', type: 'text' }
+                ]
+            },
+            'seminar': {
+                title: 'Seminar Details',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'date', label: 'Date', type: 'date' },
+                    { name: 'time', label: 'Time', type: 'time' },
+                    { name: 'venue', label: 'Venue', type: 'text' },
+                    { name: 'duration', label: 'Duration (minutes)', type: 'number' },
+                    { name: 'qaTime', label: 'Q&A Time (minutes)', type: 'number' },
+                    { name: 'requirements', label: 'Requirements', type: 'textarea' }
+                ]
+            },
+            'blog': {
+                title: 'Tech Blog Details',
+                fields: [
+                    { name: 'topic', label: 'Blog Topic', type: 'text' },
+                    { name: 'platform', label: 'Platform', type: 'select', options: ['Medium', 'Dev.to', 'Personal Blog', 'Other'] },
+                    { name: 'wordCount', label: 'Min Word Count', type: 'number' },
+                    { name: 'deadline', label: 'Deadline', type: 'date' },
+                    { name: 'topics', label: 'Topics to Cover', type: 'textarea' }
+                ]
+            },
+            'prototype': {
+                title: 'Prototype Details',
+                fields: [
+                    { name: 'title', label: 'Prototype Title', type: 'text' },
+                    { name: 'description', label: 'Description', type: 'textarea' },
+                    { name: 'technology', label: 'Technology', type: 'text' },
+                    { name: 'deadline', label: 'Deadline', type: 'date' },
+                    { name: 'deliverables', label: 'Deliverables', type: 'textarea' }
+                ]
+            },
+            'app-dev': {
+                title: 'App Development Details',
+                fields: [
+                    { name: 'appName', label: 'App Name', type: 'text' },
+                    { name: 'platform', label: 'Platform', type: 'select', options: ['Android', 'iOS', 'Web', 'Cross-platform'] },
+                    { name: 'features', label: 'Key Features', type: 'textarea' },
+                    { name: 'deadline', label: 'Deadline', type: 'date' },
+                    { name: 'teamSize', label: 'Team Size', type: 'number' }
+                ]
+            },
+            'gd-lead': {
+                title: 'Group Discussion Lead',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'date', label: 'Date', type: 'date' },
+                    { name: 'duration', label: 'Duration (minutes)', type: 'number' },
+                    { name: 'participants', label: 'Number of Participants', type: 'number' }
+                ]
+            },
+            'innovation': {
+                title: 'Innovation Challenge Details',
+                fields: [
+                    { name: 'challengeName', label: 'Challenge Name', type: 'text' },
+                    { name: 'description', label: 'Description', type: 'textarea' },
+                    { name: 'rules', label: 'Rules', type: 'textarea' },
+                    { name: 'deadline', label: 'Submission Deadline', type: 'date' },
+                    { name: 'prize', label: 'Prize', type: 'text' }
+                ]
+            },
+            // Reactive Types
+            'remedial': {
+                title: 'Remedial Assignment Details',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'difficulty', label: 'Difficulty Level', type: 'select', options: ['Easy', 'Medium'] },
+                    { name: 'dueDate', label: 'Due Date', type: 'date' },
+                    { name: 'referenceMaterial', label: 'Reference Material', type: 'textarea' },
+                    { name: 'instructions', label: 'Instructions', type: 'textarea' },
+                    { name: 'questionsCount', label: 'Number of Questions', type: 'number' }
+                ]
+            },
+            'practice': {
+                title: 'Practice Worksheet Details',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'questionsCount', label: 'Number of Questions', type: 'number' },
+                    { name: 'difficulty', label: 'Difficulty', type: 'select', options: ['Easy', 'Medium', 'Mixed'] },
+                    { name: 'dueDate', label: 'Due Date', type: 'date' },
+                    { name: 'instructions', label: 'Instructions', type: 'textarea' },
+                    { name: 'attempts', label: 'Max Attempts', type: 'number', placeholder: 'e.g., 3' }
+                ]
+            },
+            'basic-seminar': {
+                title: 'Basic Seminar Details',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'date', label: 'Presentation Date', type: 'date' },
+                    { name: 'duration', label: 'Duration (minutes)', type: 'number' },
+                    { name: 'slidesRequired', label: 'Slides Required', type: 'select', options: ['Yes', 'No'] },
+                    { name: 'concepts', label: 'Basic Concepts to Cover', type: 'textarea' }
+                ]
+            },
+            'doubt': {
+                title: 'Doubt Clearing Session',
+                fields: [
+                    { name: 'date', label: 'Session Date', type: 'date' },
+                    { name: 'time', label: 'Session Time', type: 'time' },
+                    { name: 'venue', label: 'Venue / Link', type: 'text' },
+                    { name: 'duration', label: 'Duration (minutes)', type: 'number' },
+                    { name: 'mode', label: 'Mode', type: 'select', options: ['Online', 'Offline', 'Hybrid'] },
+                    { name: 'topics', label: 'Topics to Cover', type: 'textarea' }
+                ]
+            },
+            'basic-coding': {
+                title: 'Basic Coding Task',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'language', label: 'Language', type: 'select', options: ['C', 'C++', 'Python', 'Java', 'Any'] },
+                    { name: 'questions', label: 'Number of Programs', type: 'number' },
+                    { name: 'dueDate', label: 'Due Date', type: 'date' },
+                    { name: 'instructions', label: 'Instructions', type: 'textarea' }
+                ]
+            },
+            'retest': {
+                title: 'Re-test Details',
+                fields: [
+                    { name: 'subject', label: 'Subject', type: 'text' },
+                    { name: 'chapters', label: 'Chapters Included', type: 'textarea' },
+                    { name: 'testDate', label: 'Test Date', type: 'date' },
+                    { name: 'totalMarks', label: 'Total Marks', type: 'number' },
+                    { name: 'passingMarks', label: 'Passing Marks', type: 'number' },
+                    { name: 'mode', label: 'Mode', type: 'select', options: ['Online', 'Offline'] },
+                    { name: 'syllabus', label: 'Syllabus', type: 'textarea' }
+                ]
+            },
+            'viva': {
+                title: 'Viva Details',
+                fields: [
+                    { name: 'subject', label: 'Subject', type: 'text' },
+                    { name: 'date', label: 'Viva Date', type: 'date' },
+                    { name: 'time', label: 'Time', type: 'time' },
+                    { name: 'venue', label: 'Venue', type: 'text' },
+                    { name: 'topics', label: 'Topics', type: 'textarea' },
+                    { name: 'duration', label: 'Duration (minutes)', type: 'number' }
+                ]
+            },
+            'guided-project': {
+                title: 'Guided Mini Project',
+                fields: [
+                    { name: 'title', label: 'Project Title', type: 'text' },
+                    { name: 'description', label: 'Description', type: 'textarea' },
+                    { name: 'steps', label: 'Step-by-step Instructions', type: 'textarea' },
+                    { name: 'deadline', label: 'Deadline', type: 'date' },
+                    { name: 'helpSession', label: 'Help Session Date', type: 'date' }
+                ]
+            },
+            'lab-practice': {
+                title: 'Lab Practice Task',
+                fields: [
+                    { name: 'experiment', label: 'Experiment Name', type: 'text' },
+                    { name: 'date', label: 'Lab Date', type: 'date' },
+                    { name: 'venue', label: 'Lab Venue', type: 'text' },
+                    { name: 'objectives', label: 'Objectives', type: 'textarea' },
+                    { name: 'procedure', label: 'Procedure', type: 'textarea' }
+                ]
+            },
+            'peer-learning': {
+                title: 'Peer Learning Task',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'partner', label: 'Partner Student', type: 'text', placeholder: 'Name of peer partner' },
+                    { name: 'deadline', label: 'Completion Deadline', type: 'date' },
+                    { name: 'task', label: 'Task Description', type: 'textarea' }
+                ]
+            },
+            'basic-presentation': {
+                title: 'Basic Presentation Details',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'date', label: 'Date', type: 'date' },
+                    { name: 'duration', label: 'Duration (minutes)', type: 'number' },
+                    { name: 'slides', label: 'Max Slides', type: 'number' },
+                    { name: 'content', label: 'Content Requirements', type: 'textarea' }
+                ]
+            },
+            'recorded-exp': {
+                title: 'Recorded Explanation',
+                fields: [
+                    { name: 'topic', label: 'Topic', type: 'text' },
+                    { name: 'duration', label: 'Max Duration (minutes)', type: 'number' },
+                    { name: 'format', label: 'Format', type: 'select', options: ['Video', 'Audio', 'Both'] },
+                    { name: 'deadline', label: 'Submission Deadline', type: 'date' },
+                    { name: 'instructions', label: 'Instructions', type: 'textarea' }
+                ]
+            }
+        };
+
+        // ==================== Navigation Functions ====================
+        function goToStep(step) {
+            // Validate before moving
+            if (step === 2 && !validateStep1()) return;
+            if (step === 3 && !validateStep2()) return;
+            if (step === 4 && !validateStep3()) return;
+
+            // Hide all steps
+            document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active', 'completed'));
+
+            // Show current step
+            document.getElementById('step' + step).classList.add('active');
+
+            // Update indicators
+            for (let i = 1; i <= 4; i++) {
+                const indicator = document.getElementById('step' + i + '-indicator');
+                if (i < step) {
+                    indicator.classList.add('completed');
+                } else if (i === step) {
+                    indicator.classList.add('active');
+                }
+            }
+
+            if (step === 4) {
+                populateReview();
+            }
+        }
+
+        function selectTarget(type) {
+            formData.targetType = type;
+            document.querySelectorAll('.target-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-value="${type}"]`).classList.add('selected');
+
+            // Show/hide relevant sections
+            document.getElementById('selectedStudentsSection').classList.add('hidden');
+            document.getElementById('performanceSection').classList.add('hidden');
+
+            if (type === 'selected-students') {
+                document.getElementById('selectedStudentsSection').classList.remove('hidden');
+            } else if (type === 'performance-based') {
+                document.getElementById('performanceSection').classList.remove('hidden');
+            }
+        }
+
+        function selectPerformance(type) {
+            formData.performanceType = type;
+            document.querySelectorAll('.perf-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`.perf-card.${type}`).classList.add('selected');
+
+            // Show appropriate assignment types
+            if (type === 'proactive') {
+                document.getElementById('proactiveTypes').classList.remove('hidden');
+                document.getElementById('reactiveTypes').classList.add('hidden');
+            } else {
+                document.getElementById('proactiveTypes').classList.add('hidden');
+                document.getElementById('reactiveTypes').classList.remove('hidden');
+            }
+        }
+
+        function selectAssignmentType(type) {
+            formData.assignmentType = type;
+            document.querySelectorAll('.assignment-type-option').forEach(o => o.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            renderDynamicFields(type);
+        }
+
+        function renderDynamicFields(type) {
+            const config = dynamicFieldConfigs[type];
+            const container = document.getElementById('dynamicFieldsContainer');
+            
+            if (!config) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `<div class="dynamic-fields"><h3>📋 ${config.title}</h3><div class="field-group ${config.fields.length === 1 ? 'single' : ''}">`;
+            
+            config.fields.forEach(field => {
+                html += `<div class="form-group">`;
+                html += `<label>${field.label}</label>`;
+                
+                if (field.type === 'select') {
+                    html += `<select id="dyn_${field.name}" name="${field.name}">`;
+                    html += `<option value="">-- Select --</option>`;
+                    field.options.forEach(opt => {
+                        html += `<option value="${opt}">${opt}</option>`;
+                    });
+                    html += `</select>`;
+                } else if (field.type === 'textarea') {
+                    html += `<textarea id="dyn_${field.name}" name="${field.name}" placeholder="${field.placeholder || ''}"></textarea>`;
+                } else {
+                    html += `<input type="${field.type}" id="dyn_${field.name}" name="${field.name}" placeholder="${field.placeholder || ''}">`;
+                }
+                html += `</div>`;
+            });
+            
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        // ==================== Validation Functions ====================
+        function validateStep1() {
+            if (!formData.targetType) {
+                alert('Please select who this assignment should be assigned to');
+                return false;
+            }
+            if (formData.targetType === 'performance-based' && !formData.performanceType) {
+                alert('Please select a performance type');
+                return false;
+            }
+            return true;
+        }
+
+        function validateStep2() {
+            if (!formData.assignmentType) {
+                alert('Please select an assignment type');
+                return false;
+            }
+            return true;
+        }
+
+        function validateStep3() {
+            formData.title = document.getElementById('assignmentTitle').value;
+            formData.subject = document.getElementById('subject').value;
+            formData.description = document.getElementById('description').value;
+            formData.dueDate = document.getElementById('dueDate').value;
+            formData.maxMarks = document.getElementById('maxMarks').value;
+
+            if (!formData.title) {
+                alert('Please enter an assignment title');
+                return false;
+            }
+            if (!formData.subject) {
+                alert('Please enter a subject');
+                return false;
+            }
+
+            // Collect dynamic fields
+            const config = dynamicFieldConfigs[formData.assignmentType];
+            if (config) {
+                config.fields.forEach(field => {
+                    const el = document.getElementById('dyn_' + field.name);
+                    if (el) {
+                        formData.dynamicFields[field.name] = el.value;
+                    }
+                });
+            }
+
+            return true;
+        }
+
+        // ==================== Review & Submit ====================
+        function populateReview() {
+            const review = document.getElementById('reviewContent');
+            
+            let targetText = '';
+            if (formData.targetType === 'entire-class') targetText = 'Entire Class';
+            else if (formData.targetType === 'selected-students') targetText = `Selected Students (${formData.selectedStudents.length})`;
+            else targetText = formData.performanceType === 'proactive' ? 'Proactive Students' : 'Reactive Students';
+
+            const typeText = formData.assignmentType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+            let html = `
+                <div class="review-item"><div class="review-label">Target Students</div><div class="review-value">${targetText}</div></div>
+                <div class="review-item"><div class="review-label">Assignment Type</div><div class="review-value">${typeText}</div></div>
+                <div class="review-item"><div class="review-label">Title</div><div class="review-value">${formData.title}</div></div>
+                <div class="review-item"><div class="review-label">Subject</div><div class="review-value">${formData.subject}</div></div>
+                <div class="review-item"><div class="review-label">Due Date</div><div class="review-value">${formData.dueDate || 'Not set'}</div></div>
+                <div class="review-item"><div class="review-label">Max Marks</div><div class="review-value">${formData.maxMarks || 'Not set'}</div></div>
+                <div class="review-item"><div class="review-label">Description</div><div class="review-value">${formData.description || 'None'}</div></div>
+            `;
+
+            // Add dynamic fields
+            const config = dynamicFieldConfigs[formData.assignmentType];
+            if (config) {
+                config.fields.forEach(field => {
+                    const value = formData.dynamicFields[field.name] || 'Not set';
+                    html += `<div class="review-item"><div class="review-label">${field.label}</div><div class="review-value">${value}</div></div>`;
+                });
+            }
+
+            review.innerHTML = html;
+        }
+
+        async function submitAssignment() {
+            const assignmentData = {
+                ...formData,
+                createdAt: new Date().toISOString()
+            };
+
+            console.log('Submitting Assignment:', assignmentData);
+
+            // In production, send to backend
+            // try {
+            //     const response = await fetch('/api/assignments', {
+            //         method: 'POST',
+            //         headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify(assignmentData)
+            //     });
+            //     const result = await response.json();
+            // } catch (error) {
+            //     console.error('Error:', error);
+            // }
+
+            // Show success
+            document.querySelectorAll('.step-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('successMessage').classList.remove('hidden');
+        }
+
+        function resetForm() {
+            formData = {
+                targetType: 'entire-class',
+                classId: '',
+                selectedStudents: [],
+                performanceType: '',
+                assignmentType: '',
+                title: '',
+                subject: '',
+                description: '',
+                dueDate: '',
+                maxMarks: '',
+                dynamicFields: {}
+            };
+            
+            document.getElementById('assignmentForm').reset();
+            document.getElementById('successMessage').classList.add('hidden');
+            document.querySelectorAll('.target-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.perf-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.assignment-type-option').forEach(o => o.classList.remove('selected'));
+            document.getElementById('selectedStudentsSection').classList.add('hidden');
+            document.getElementById('performanceSection').classList.add('hidden');
+            document.getElementById('dynamicFieldsContainer').innerHTML = '';
+            
+            goToStep(1);
+        }
+
+        // ==================== Load Classes ====================
+        async function loadClasses() {
+            try {
+                const response = await fetch('/api/local/classes');
+                const data = await response.json();
+                const select = document.getElementById('classSelect');
+                
+                if (data.ok && data.classes) {
+                    data.classes.forEach(cls => {
+                        const option = document.createElement('option');
+                        option.value = cls.id;
+                        option.textContent = cls.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading classes:', error);
+            }
+        }
+
+        async function loadStudents() {
+            const classId = document.getElementById('classSelect').value;
+            formData.classId = classId;
+            
+            if (!classId) {
+                allStudents = [];
+                document.getElementById('studentList').innerHTML = '<p style="color:#666; text-align:center;">Select a class first</p>';
+                return;
+            }
+
+            // In production, fetch from API
+            // Simulated students for demo
+            allStudents = [
+                { id: 1, name: 'John Smith', roll: 'BCA001' },
+                { id: 2, name: 'Sarah Johnson', roll: 'BCA002' },
+                { id: 3, name: 'Mike Davis', roll: 'BCA003' },
+                { id: 4, name: 'Emily Brown', roll: 'BCA004' },
+                { id: 5, name: 'David Wilson', roll: 'BCA005' }
+            ];
+
+            let html = '';
+            allStudents.forEach(s => {
+                html += `<label class="student-checkbox">
+                    <input type="checkbox" value="${s.id}" onchange="toggleStudent(${s.id})">
+                    ${s.name} (${s.roll})
+                </label>`;
+            });
+            document.getElementById('studentList').innerHTML = html;
+        }
+
+        function toggleStudent(studentId) {
+            const idx = formData.selectedStudents.indexOf(studentId);
+            if (idx > -1) {
+                formData.selectedStudents.splice(idx, 1);
+            } else {
+                formData.selectedStudents.push(studentId);
+            }
+        }
+
+        // Initialize
+        loadClasses();
+    </script>
+</body>
+</html>

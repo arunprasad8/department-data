@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Assignment - CIA Classroom</title>
+    <style>
+        :root {
+            --christ-blue: #002147;
+            --christ-gold: #d4af37;
+            --christ-white: #ffffff;
+            --bg-light: #f4f6f9;
+            --success-green: #28a745;
+            --warning-orange: #fd7e14;
+            --danger-red: #dc3545;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(to right, var(--christ-blue), #003366);
+            color: var(--christ-white);
+            padding: 30px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 4px solid var(--christ-gold);
+        }
+        .header h1 { 
+            margin: 0 0 10px 0;
+            color: var(--christ-white);
+            font-size: 2em;
+        }
+        .header-subtitle {
+            color: var(--christ-gold);
+            font-size: 0.95em;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .card-title {
+            color: var(--christ-blue);
+            font-size: 1.3em;
+            border-bottom: 2px solid var(--christ-blue);
+            padding-bottom: 10px;
+            margin: 0 0 20px 0;
+        }
+        .assignment-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--christ-blue);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .detail-item {
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            color: var(--christ-blue);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        .type-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .type-badge.proactive {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .type-badge.reactive {
+            background: linear-gradient(135deg, #f5576c 0%, #fd7272 100%);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-overdue {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-closed {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .submissions-table th {
+            background: var(--christ-blue);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .submissions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .submissions-table tr:hover {
+            background: #f8f9fa;
+        }
+        .submission-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-submitted {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .status-reviewed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-not-submitted {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--christ-blue);
+            font-weight: 600;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--christ-blue);
+            box-shadow: 0 0 0 3px rgba(0, 33, 71, 0.1);
+        }
+        .submission-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .submission-type-btn {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+        }
+        .submission-type-btn:hover {
+            border-color: var(--christ-blue);
+            background: #f8f9fa;
+        }
+        .submission-type-btn.active {
+            border-color: var(--christ-blue);
+            background: linear-gradient(135deg, rgba(0, 33, 71, 0.05), rgba(212, 175, 55, 0.05));
+            box-shadow: 0 4px 8px rgba(0, 33, 71, 0.1);
+        }
+        .submission-type-btn input[type="radio"] {
+            margin-right: 8px;
+        }
+        .submission-type-btn label {
+            margin: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        .file-upload-area:hover,
+        .file-upload-area.active {
+            border-color: var(--christ-blue);
+            background: #f0f7ff;
+        }
+        .file-upload-area input[type="file"] {
+            display: none;
+        }
+        .file-upload-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .file-upload-text {
+            color: var(--christ-blue);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .file-upload-hint {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .file-selected {
+            margin-top: 10px;
+            padding: 10px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+        .btn-primary {
+            background: var(--christ-blue);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #001f35;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 33, 71, 0.25);
+        }
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #5a6268;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .message strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--christ-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .no-assignment {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .no-assignment-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .submission-types {
+                grid-template-columns: 1fr;
+            }
+            .submissions-table {
+                font-size: 0.9em;
+            }
+            .submissions-table th,
+            .submissions-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 id="assignment-title">📝 Submit Assignment</h1>
+            <p class="header-subtitle" id="assignment-brief">Loading assignment details...</p>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading-state" class="card">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading assignment...</p>
+            </div>
+        </div>
+        
+        <!-- No Assignment State -->
+        <div id="no-assignment-state" class="card" style="display: none;">
+            <div class="no-assignment">
+                <div class="no-assignment-icon">❌</div>
+                <h2>Assignment Not Found</h2>
+                <p id="no-assignment-message">The assignment link is invalid or the assignment has been deleted.</p>
+            </div>
+        </div>
+        
+        <!-- Error/Warning Messages -->
+        <div id="error-message" class="message error-message" style="display: none;">
+            <strong>⚠️ Error</strong>
+            <span id="error-text"></span>
+        </div>
+        
+        <div id="warning-message" class="message warning-message" style="display: none;">
+            <strong>⏰ Deadline Alert</strong>
+            <span id="warning-text"></span>
+        </div>
+        
+        <!-- Success Message -->
+        <div id="success-message" class="message success-message" style="display: none;">
+            <strong>✅ Submission Successful!</strong>
+            <p>Your assignment has been submitted.</p>
+            <p id="submitted-time"></p>
+        </div>
+        
+        <!-- Main Content -->
+        <div id="assignment-content" style="display: none;">
+            <!-- Assignment Details Card -->
+            <div class="card">
+                <h2 class="card-title">📚 Assignment Details</h2>
+                <div class="assignment-details">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Type</div>
+                            <div class="detail-value">
+                                <span id="assignment-type" class="type-badge proactive">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Max Marks</div>
+                            <div class="detail-value" id="assignment-marks">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Deadline</div>
+                            <div class="detail-value" id="assignment-deadline">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value">
+                                <span id="assignment-status" class="status-badge status-active">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                        <div class="detail-label">Description</div>
+                        <p id="assignment-description" style="color: #666; margin: 10px 0 0 0; line-height: 1.6;">Loading description...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Student Submissions Table -->
+            <div class="card">
+                <h2 class="card-title">📊 All Submissions</h2>
+                <div style="overflow-x: auto;">
+                    <table class="submissions-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Submitted At</th>
+                                <th>Submission</th>
+                                <th>Status</th>
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissions-tbody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #999; padding: 40px;">
+                                    Loading submissions...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Submission Form -->
+            <div class="card" id="submission-form-card">
+                <h2 class="card-title">✉️ Submit Your Work</h2>
+                
+                <!-- Student Info -->
+                <div class="form-group">
+                    <label for="student-name">Select Your Name *</label>
+                    <select id="student-name" required>
+                        <option value="">-- Select your name --</option>
+                    </select>
+                </div>
+                
+                <!-- Submission Type Selection -->
+                <div class="form-group">
+                    <label>How would you like to submit? *</label>
+                    <div class="submission-types">
+                        <div class="submission-type-btn" data-type="file">
+                            <label>
+                                <input type="radio" name="submission-type" value="file">
+                                <span>📁 Upload File</span>
+                            </label>
+                        </div>
+                        <div class="submission-type-btn" data-type="text">
+                            <label>
+                                <input type="radio" name="submission-type" value="text">
+                                <span>📝 Text Response</span>
+                            </label>
+                        </div>
+                        <div class="submission-type-btn" data-type="link">
+                            <label>
+                                <input type="radio" name="submission-type" value="link">
+                                <span>🔗 Share Link</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- File Upload Section -->
+                <div id="file-submission" class="form-group" style="display: none;">
+                    <label for="assignment-file">Select File to Upload *</label>
+                    <div class="file-upload-area" onclick="document.getElementById('assignment-file').click();">
+                        <input type="file" id="assignment-file">
+                        <div class="file-upload-icon">📤</div>
+                        <div class="file-upload-text">Click to upload or drag and drop</div>
+                        <div class="file-upload-hint">Max file size: 50 MB</div>
+                    </div>
+                    <div id="file-name" class="file-selected" style="display: none;">
+                        Selected file will appear here
+                    </div>
+                </div>
+                
+                <!-- Text Response Section -->
+                <div id="text-submission" class="form-group" style="display: none;">
+                    <label for="assignment-text">Your Response *</label>
+                    <textarea id="assignment-text" placeholder="Enter your response here..."></textarea>
+                </div>
+                
+                <!-- Link Submission Section -->
+                <div id="link-submission" class="form-group" style="display: none;">
+                    <label for="assignment-link">Submission Link *</label>
+                    <input type="text" id="assignment-link" placeholder="E.g., https://github.com/yourrepo or https://drive.google.com/...">
+                    <small style="color: #666; display: block; margin-top: 5px;">Paste links to GitHub repos, Google Drive, OneDrive, or other platforms</small>
+                </div>
+                
+                <!-- Submit Button -->
+                <div style="display: flex; gap: 10px;">
+                    <button id="submit-btn" class="btn btn-primary" onclick="submitAssignment()" style="flex: 1;">
+                        ✓ Submit Assignment
+                    </button>
+                    <button class="btn btn-secondary" onclick="location.reload();">↻ Clear Form</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let token = null;
+        let assignmentData = null;
+        let selectedSubmissionType = null;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initPage);
+
+        // Extract token from URL
+        function getTokenFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('token');
+        }
+
+        // Initialize page
+        async function initPage() {
+            token = getTokenFromURL();
+            console.log('🔗 Token from URL:', token);
+            console.log('📍 Full URL:', window.location.href);
+            
+            if (!token) {
+                showNoAssignmentState('No assignment token provided in URL');
+                return;
+            }
+
+            await loadAssignment();
+            setupSubmissionTypeSelection();
+            setupFileUpload();
+        }
+
+        // Load assignment from API
+        async function loadAssignment() {
+            try {
+                console.log('📋 Loading assignment with token:', token);
+                const response = await fetch(`/api/student/assignment/${token}`);
+                const data = await response.json();
+                
+                console.log('📦 API Response:', data);
+                console.log('Response Status:', response.status, response.ok);
+
+                if (!response.ok || !data.ok) {
+                    showNoAssignmentState(data.error || 'Assignment not found');
+                    return;
+                }
+
+                assignmentData = data.assignment;
+                console.log('✅ Assignment loaded:', assignmentData);
+                displayAssignment();
+                loadSubmissions();
+                checkDeadline();
+            } catch (error) {
+                console.error('Error loading assignment:', error);
+                showErrorMessage('Failed to load assignment: ' + error.message);
+            }
+        }
+
+        // Display assignment details
+        function displayAssignment() {
+            if (!assignmentData) return;
+
+            // Hide loading, show content
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('assignment-content').style.display = 'block';
+
+            // Update header
+            document.getElementById('assignment-title').textContent = `📝 ${assignmentData.title}`;
+            document.getElementById('assignment-brief').textContent = `Type: ${assignmentData.type.toUpperCase()} | Max Marks: ${assignmentData.maxMarks || 100}`;
+
+            // Type badge
+            const typeEl = document.getElementById('assignment-type');
+            const typeClass = assignmentData.type === 'proactive' ? 'proactive' : 'reactive';
+            typeEl.textContent = assignmentData.type === 'proactive' ? '🔵 Proactive' : '🔴 Reactive';
+            typeEl.className = `type-badge ${typeClass}`;
+
+            // Marks
+            document.getElementById('assignment-marks').textContent = assignmentData.maxMarks || '100';
+
+            // Deadline
+            const deadline = new Date(assignmentData.dueDate);
+            document.getElementById('assignment-deadline').textContent = deadline.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Description
+            document.getElementById('assignment-description').textContent = assignmentData.description || 'No description provided.';
+            
+            // Populate student dropdown with assigned students
+            populateStudentDropdown();
+        }
+        
+        // Populate student dropdown with student list
+        function populateStudentDropdown() {
+            const dropdown = document.getElementById('student-name');
+            
+            // Clear existing options (except the placeholder)
+            while (dropdown.options.length > 1) {
+                dropdown.remove(1);
+            }
+            
+            // List of all students
+            const students = [
+                { id: 'student-001', name: 'Rahul Singh', email: 'rahul.singh@christuniversity.in' },
+                { id: 'student-002', name: 'Anjali Verma', email: 'anjali.verma@christuniversity.in' },
+                { id: 'student-003', name: 'Priya Nair', email: 'priya.nair@christuniversity.in' },
+                { id: 'student-004', name: 'Rohan Gupta', email: 'rohan.gupta@christuniversity.in' },
+                { id: 'student-005', name: 'Neha Sharma', email: 'neha.sharma@christuniversity.in' },
+                { id: 'student-006', name: 'Arjun Patel', email: 'arjun.patel@christuniversity.in' },
+                { id: 'student-007', name: 'Deepak Kumar', email: 'deepak.kumar@christuniversity.in' },
+                { id: 'student-008', name: 'Pooja Bhat', email: 'pooja.bhat@christuniversity.in' },
+                { id: 'student-009', name: 'Vikram Singh', email: 'vikram.singh@christuniversity.in' },
+                { id: 'student-010', name: 'Sneha Desai', email: 'sneha.desai@christuniversity.in' }
+            ];
+            
+            // Add students to dropdown
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.email;
+                option.textContent = student.name;
+                option.dataset.studentId = student.id;
+                dropdown.appendChild(option);
+            });
+        }
+
+        // Load submissions for this assignment
+        async function loadSubmissions() {
+            try {
+                const response = await fetch(`/api/monitoring/assignments/${assignmentData.id}`);
+                const data = await response.json();
+
+                if (data.ok && data.studentDetails) {
+                    renderSubmissionsTable(data.studentDetails);
+                }
+            } catch (error) {
+                console.error('Error loading submissions:', error);
+            }
+        }
+
+        // Render submissions table
+        function renderSubmissionsTable(studentDetails) {
+            const tbody = document.getElementById('submissions-tbody');
+            if (!studentDetails || studentDetails.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999; padding: 40px;">No submissions yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = studentDetails.map(student => {
+                let statusBadge = '<span class="submission-status status-not-submitted">❌ Not Started</span>';
+                let submissionCell = '-';
+                let marksCell = '-';
+                let submittedAt = '-';
+
+                if (student.status === 'Submitted') {
+                    statusBadge = '<span class="submission-status status-submitted">⏳ Submitted</span>';
+                    if (student.fileName) {
+                        submissionCell = `📁 ${student.fileName}`;
+                    } else if (student.linkResponse) {
+                        submissionCell = `<a href="${student.linkResponse}" target="_blank" style="color: var(--christ-blue);">🔗 View Link</a>`;
+                    } else {
+                        submissionCell = '📝 Text submitted';
+                    }
+                    if (student.submissionTimestamp) {
+                        const date = new Date(student.submissionTimestamp);
+                        submittedAt = date.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                } else if (student.status === 'Reviewed') {
+                    statusBadge = '<span class="submission-status status-reviewed">✓ Reviewed</span>';
+                    if (student.fileName) {
+                        submissionCell = `📁 ${student.fileName}`;
+                    } else if (student.linkResponse) {
+                        submissionCell = `<a href="${student.linkResponse}" target="_blank" style="color: var(--christ-blue);">🔗 View Link</a>`;
+                    } else {
+                        submissionCell = '📝 Text submitted';
+                    }
+                    marksCell = `<strong style="color: #28a745;">${student.marks || 0}/${assignmentData.maxMarks || 100}</strong>`;
+                    if (student.submissionTimestamp) {
+                        const date = new Date(student.submissionTimestamp);
+                        submittedAt = date.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                }
+
+                return `
+                    <tr>
+                        <td><strong>${student.name || 'Unknown'}</strong></td>
+                        <td>${submittedAt}</td>
+                        <td>${submissionCell}</td>
+                        <td>${statusBadge}</td>
+                        <td>${marksCell}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Check deadline for warnings
+        function checkDeadline() {
+            if (!assignmentData) return;
+
+            const now = new Date();
+            const deadline = new Date(assignmentData.dueDate);
+            const timeDiff = deadline.getTime() - now.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            const hoursDiff = Math.ceil(timeDiff / (1000 * 60 * 60));
+
+            const statusEl = document.getElementById('assignment-status');
+            const formCard = document.getElementById('submission-form-card');
+
+            if (timeDiff < 0) {
+                // Deadline passed
+                statusEl.className = 'status-badge status-closed';
+                statusEl.textContent = '🔒 Closed';
+                if (formCard) formCard.style.display = 'none';
+                showErrorMessage('This assignment deadline has passed. No new submissions are allowed.');
+            } else if (daysDiff <= 1) {
+                // Less than 1 day left
+                statusEl.className = 'status-badge status-overdue';
+                statusEl.textContent = '⚠️ Overdue Soon';
+                document.getElementById('warning-text').textContent = `Deadline is in ${hoursDiff} hours. Submit your work now!`;
+                document.getElementById('warning-message').style.display = 'block';
+            } else {
+                // Active
+                statusEl.className = 'status-badge status-active';
+                statusEl.textContent = '✓ Active';
+            }
+        }
+
+        // Setup submission type selection
+        function setupSubmissionTypeSelection() {
+            document.querySelectorAll('.submission-type-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active from all
+                    document.querySelectorAll('.submission-type-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Select the radio
+                    const radio = btn.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    selectedSubmissionType = radio.value;
+
+                    // Show/hide form sections
+                    document.getElementById('file-submission').style.display = selectedSubmissionType === 'file' ? 'block' : 'none';
+                    document.getElementById('text-submission').style.display = selectedSubmissionType === 'text' ? 'block' : 'none';
+                    document.getElementById('link-submission').style.display = selectedSubmissionType === 'link' ? 'block' : 'none';
+                });
+            });
+
+            // Handle radio change
+            document.querySelectorAll('input[name="submission-type"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const btn = document.querySelector(`.submission-type-btn[data-type="${radio.value}"]`);
+                    if (btn) btn.click();
+                });
+            });
+        }
+
+        // Setup file upload
+        function setupFileUpload() {
+            const fileInput = document.getElementById('assignment-file');
+            const fileUploadArea = document.querySelector('.file-upload-area');
+            const fileName = document.getElementById('file-name');
+
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    updateFileDisplay(fileInput.files[0], fileName);
+                }
+            });
+
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('active');
+            });
+
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('active');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('active');
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateFileDisplay(e.dataTransfer.files[0], fileName);
+                }
+            });
+        }
+
+        // Update file display
+        function updateFileDisplay(file, element) {
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            element.textContent = `✓ Selected: ${file.name} (${sizeMB} MB)`;
+            element.style.display = 'block';
+        }
+
+        // Submit assignment
+        async function submitAssignment() {
+            const studentNameSelect = document.getElementById('student-name');
+            if (!studentNameSelect.value) {
+                showErrorMessage('Please select your name from the dropdown');
+                return;
+            }
+            
+            const studentEmail = studentNameSelect.value; // This is set as the option value
+            const studentName = studentNameSelect.options[studentNameSelect.selectedIndex].text;
+            const studentId = studentNameSelect.options[studentNameSelect.selectedIndex].dataset.studentId;
+
+            if (!selectedSubmissionType) {
+                showErrorMessage('Please select a submission type');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Submitting...';
+
+            try {
+                const formData = new FormData();
+                formData.append('studentName', studentName);
+                formData.append('studentEmail', studentEmail);
+                formData.append('studentId', studentId);
+                formData.append('submissionType', selectedSubmissionType);
+
+                if (selectedSubmissionType === 'file') {
+                    const file = document.getElementById('assignment-file').files[0];
+                    if (!file) {
+                        showErrorMessage('Please select a file');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '✓ Submit Assignment';
+                        return;
+                    }
+                    formData.append('file', file);
+                } else if (selectedSubmissionType === 'text') {
+                    const text = document.getElementById('assignment-text').value.trim();
+                    if (!text) {
+                        showErrorMessage('Please enter your response');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '✓ Submit Assignment';
+                        return;
+                    }
+                    formData.append('textResponse', text);
+                } else if (selectedSubmissionType === 'link') {
+                    const link = document.getElementById('assignment-link').value.trim();
+                    if (!link) {
+                        showErrorMessage('Please enter a submission link');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '✓ Submit Assignment';
+                        return;
+                    }
+                    formData.append('linkResponse', link);
+                }
+
+                const response = await fetch(`/api/student/submit/${token}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    showSuccessMessage();
+                    // Reload submissions table
+                    setTimeout(() => {
+                        loadSubmissions();
+                    }, 2000);
+                } else {
+                    showErrorMessage(data.error || 'Failed to submit');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '✓ Submit Assignment';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage('Error submitting: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✓ Submit Assignment';
+            }
+        }
+
+        // Show success message
+        function showSuccessMessage() {
+            document.getElementById('assignment-content').style.display = 'none';
+            document.getElementById('success-message').style.display = 'block';
+            document.getElementById('submitted-time').textContent = 'Submitted at: ' + new Date().toLocaleString('en-IN');
+        }
+
+        // Show error message
+        function showErrorMessage(message) {
+            document.getElementById('error-text').textContent = message;
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+                document.getElementById('error-message').style.display = 'none';
+            }, 8000);
+        }
+
+        // Show no assignment state
+        function showNoAssignmentState(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('assignment-content').style.display = 'none';
+            document.getElementById('no-assignment-state').style.display = 'block';
+            document.getElementById('no-assignment-message').textContent = message || 'The assignment could not be loaded.';
+        }
+    </script>
+</body>
+</html>

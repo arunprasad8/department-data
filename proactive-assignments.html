@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proactive Assignments - CIA Classroom</title>
+    <style>
+        :root {
+            --christ-blue: #002147;
+            --christ-gold: #d4af37;
+            --christ-white: #ffffff;
+            --bg-light: #f4f6f9;
+            --success-green: #28a745;
+            --proactive-green: #20c997;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(to right, var(--christ-blue), #003366);
+            color: var(--christ-white);
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 3px solid var(--christ-gold);
+        }
+        .header h1 {
+            margin: 0;
+            color: var(--christ-white);
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            color: var(--christ-gold);
+        }
+        .card {
+            background: var(--christ-white);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .card-header {
+            border-bottom: 2px solid var(--christ-blue);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .card-header h2 {
+            color: var(--christ-blue);
+            margin: 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #444;
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--christ-blue);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 33, 71, 0.2);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background-color: var(--christ-blue);
+            color: var(--christ-white);
+        }
+        .btn-primary:hover {
+            background-color: #003366;
+        }
+        .btn-success {
+            background-color: var(--success-green);
+            color: var(--christ-white);
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: var(--christ-white);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .hidden {
+            display: none;
+        }
+        .assignment-type-section {
+            background: #e8f5e9;
+            border-left: 4px solid var(--proactive-green);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .required-fields {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        .required-fields h3 {
+            color: var(--christ-blue);
+            margin-top: 0;
+            font-size: 16px;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 15px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: var(--christ-blue);
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+        
+        <div class="header">
+            <h1>📚 Proactive Assignments</h1>
+            <p>Create specialized assignments for proactive learners</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Create New Assignment for Proactive Learners</h2>
+            </div>
+
+            <form id="proactive-assignment-form">
+                <!-- Assignment Type Dropdown -->
+                <div class="assignment-type-section">
+                    <div class="form-group">
+                        <label for="assignment-type">Select Assignment Type:</label>
+                        <select id="assignment-type" required>
+                            <option value="">-- Select Assignment Type --</option>
+                            <option value="workshop">🔧 Workshop</option>
+                            <option value="paper">📄 Paper Submitting</option>
+                            <option value="seminar">🎤 Seminar</option>
+                            <option value="research">🔬 Research Project</option>
+                            <option value="case-study">📋 Case Study</option>
+                            <option value="presentation">📊 Presentation</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Common Fields -->
+                <div class="form-group">
+                    <label for="assignment-title">Assignment Title:</label>
+                    <input type="text" id="assignment-title" placeholder="Enter assignment title" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="class-select">Select Class:</label>
+                        <select id="class-select" required>
+                            <option value="">-- Select Class --</option>
+                            <!-- Classes will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject:</label>
+                        <input type="text" id="subject" placeholder="e.g., Data Structures" required>
+                    </div>
+                </div>
+
+                <!-- Dynamic Required Fields (shown based on assignment type) -->
+                <div id="dynamic-fields" class="required-fields hidden">
+                    <h3>Required Fields</h3>
+                    
+                    <!-- Workshop Fields -->
+                    <div id="workshop-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="workshop-date">Workshop Date:</label>
+                                <input type="date" id="workshop-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="workshop-time">Workshop Time:</label>
+                                <input type="time" id="workshop-time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="workshop-venue">Venue:</label>
+                            <input type="text" id="workshop-venue" placeholder="e.g., Computer Lab 1">
+                        </div>
+                        <div class="form-group">
+                            <label for="workshop-topic">Topic:</label>
+                            <input type="text" id="workshop-topic" placeholder="Workshop topic">
+                        </div>
+                        <div class="form-group">
+                            <label for="workshop-resources">Required Resources:</label>
+                            <textarea id="workshop-resources" placeholder="List required materials, software, etc."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="workshop-max-participants">Max Participants:</label>
+                            <input type="number" id="workshop-max-participants" placeholder="e.g., 30" min="1">
+                        </div>
+                    </div>
+
+                    <!-- Paper Submitting Fields -->
+                    <div id="paper-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="paper-submission-date">Submission Deadline:</label>
+                                <input type="date" id="paper-submission-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="paper-format">Paper Format:</label>
+                                <select id="paper-format">
+                                    <option value="">-- Select Format --</option>
+                                    <option value="IEEE">IEEE</option>
+                                    <option value="APA">APA</option>
+                                    <option value="MLA">MLA</option>
+                                    <option value="Chicago">Chicago</option>
+                                    <option value="Custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="paper-topic">Topic/Title:</label>
+                            <input type="text" id="paper-topic" placeholder="Paper topic or title">
+                        </div>
+                        <div class="form-group">
+                            <label for="paper-abstract">Abstract Requirements:</label>
+                            <textarea id="paper-abstract" placeholder="Enter abstract requirements or guidelines"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="paper-min-words">Minimum Words:</label>
+                                <input type="number" id="paper-min-words" placeholder="e.g., 2000">
+                            </div>
+                            <div class="form-group">
+                                <label for="paper-max-words">Maximum Words:</label>
+                                <input type="number" id="paper-max-words" placeholder="e.g., 5000">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="paper-references">Reference Requirements:</label>
+                            <input type="text" id="paper-references" placeholder="e.g., Minimum 5 references">
+                        </div>
+                    </div>
+
+                    <!-- Seminar Fields -->
+                    <div id="seminar-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="seminar-date">Seminar Date:</label>
+                                <input type="date" id="seminar-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="seminar-time">Seminar Time:</label>
+                                <input type="time" id="seminar-time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="seminar-venue">Venue:</label>
+                            <input type="text" id="seminar-venue" placeholder="e.g., Auditorium">
+                        </div>
+                        <div class="form-group">
+                            <label for="seminar-topic">Topic:</label>
+                            <input type="text" id="seminar-topic" placeholder="Seminar topic">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="seminar-duration">Duration (minutes):</label>
+                                <input type="number" id="seminar-duration" placeholder="e.g., 30" min="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="seminar-qa-time">Q&A Time (minutes):</label>
+                                <input type="number" id="seminar-qa-time" placeholder="e.g., 10" min="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="seminar-requirements">Presentation Requirements:</label>
+                            <textarea id="seminar-requirements" placeholder="Slides, handouts, demo requirements"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Research Project Fields -->
+                    <div id="research-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="research-start-date">Start Date:</label>
+                                <input type="date" id="research-start-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="research-end-date">End Date:</label>
+                                <input type="date" id="research-end-date">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="research-title">Project Title:</label>
+                            <input type="text" id="research-title" placeholder="Research project title">
+                        </div>
+                        <div class="form-group">
+                            <label for="research-objectives">Objectives:</label>
+                            <textarea id="research-objectives" placeholder="Research objectives"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="research-methodology">Methodology:</label>
+                            <textarea id="research-methodology" placeholder="Research methodology"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="research-expected-output">Expected Output:</label>
+                            <textarea id="research-expected-output" placeholder="e.g., Research paper, prototype, report"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="research-team-size">Team Size:</label>
+                            <input type="number" id="research-team-size" placeholder="e.g., 3" min="1">
+                        </div>
+                    </div>
+
+                    <!-- Case Study Fields -->
+                    <div id="case-study-fields" class="assignment-fields hidden">
+                        <div class="form-group">
+                            <label for="case-title">Case Study Title:</label>
+                            <input type="text" id="case-title" placeholder="Case study title">
+                        </div>
+                        <div class="form-group">
+                            <label for="case-description">Case Description:</label>
+                            <textarea id="case-description" placeholder="Describe the case scenario"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="case-objectives">Learning Objectives:</label>
+                            <textarea id="case-objectives" placeholder="What should students learn from this case"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="case-submission-date">Submission Deadline:</label>
+                                <input type="date" id="case-submission-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="case-word-limit">Word Limit:</label>
+                                <input type="number" id="case-word-limit" placeholder="e.g., 3000">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="case-questions">Questions to Address:</label>
+                            <textarea id="case-questions" placeholder="List questions students need to answer"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Presentation Fields -->
+                    <div id="presentation-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="presentation-date">Presentation Date:</label>
+                                <input type="date" id="presentation-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="presentation-time">Presentation Time:</label>
+                                <input type="time" id="presentation-time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="presentation-topic">Topic:</label>
+                            <input type="text" id="presentation-topic" placeholder="Presentation topic">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="presentation-duration">Duration (minutes):</label>
+                                <input type="number" id="presentation-duration" placeholder="e.g., 15" min="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="presentation-slides">Max Slides:</label>
+                                <input type="number" id="presentation-slides" placeholder="e.g., 20">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="presentation-requirements">Requirements:</label>
+                            <textarea id="presentation-requirements" placeholder="Slide format, content requirements, etc."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="presentation-evaluation-criteria">Evaluation Criteria:</label>
+                            <textarea id="presentation-evaluation-criteria" placeholder="How will presentation be graded"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="assignment-description">Additional Instructions:</label>
+                    <textarea id="assignment-description" placeholder="Any additional instructions for students"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="due-date">Due Date:</label>
+                        <input type="date" id="due-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="max-marks">Max Marks:</label>
+                        <input type="number" id="max-marks" placeholder="e.g., 100" min="1">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success">Create Proactive Assignment</button>
+            </form>
+
+            <div id="success-message" class="success-message hidden">
+                Assignment created successfully!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Assignment type change handler
+        document.getElementById('assignment-type').addEventListener('change', function() {
+            const selectedType = this.value;
+            const dynamicFields = document.getElementById('dynamic-fields');
+            const allFields = document.querySelectorAll('.assignment-fields');
+            
+            // Hide all specific fields first
+            allFields.forEach(field => field.classList.add('hidden'));
+            
+            if (selectedType) {
+                dynamicFields.classList.remove('hidden');
+                const specificFields = document.getElementById(selectedType + '-fields');
+                if (specificFields) {
+                    specificFields.classList.remove('hidden');
+                }
+            } else {
+                dynamicFields.classList.add('hidden');
+            }
+        });
+
+        // Form submission handler
+        document.getElementById('proactive-assignment-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const assignmentType = document.getElementById('assignment-type').value;
+            const formData = {
+                type: 'proactive',
+                assignmentType: assignmentType,
+                title: document.getElementById('assignment-title').value,
+                classId: document.getElementById('class-select').value,
+                subject: document.getElementById('subject').value,
+                description: document.getElementById('assignment-description').value,
+                dueDate: document.getElementById('due-date').value,
+                maxMarks: document.getElementById('max-marks').value,
+                createdAt: new Date().toISOString()
+            };
+
+            // Add type-specific fields
+            if (assignmentType === 'workshop') {
+                formData.workshopDate = document.getElementById('workshop-date').value;
+                formData.workshopTime = document.getElementById('workshop-time').value;
+                formData.venue = document.getElementById('workshop-venue').value;
+                formData.topic = document.getElementById('workshop-topic').value;
+                formData.resources = document.getElementById('workshop-resources').value;
+                formData.maxParticipants = document.getElementById('workshop-max-participants').value;
+            } else if (assignmentType === 'paper') {
+                formData.submissionDate = document.getElementById('paper-submission-date').value;
+                formData.format = document.getElementById('paper-format').value;
+                formData.topic = document.getElementById('paper-topic').value;
+                formData.abstract = document.getElementById('paper-abstract').value;
+                formData.minWords = document.getElementById('paper-min-words').value;
+                formData.maxWords = document.getElementById('paper-max-words').value;
+                formData.references = document.getElementById('paper-references').value;
+            } else if (assignmentType === 'seminar') {
+                formData.seminarDate = document.getElementById('seminar-date').value;
+                formData.seminarTime = document.getElementById('seminar-time').value;
+                formData.venue = document.getElementById('seminar-venue').value;
+                formData.topic = document.getElementById('seminar-topic').value;
+                formData.duration = document.getElementById('seminar-duration').value;
+                formData.qaTime = document.getElementById('seminar-qa-time').value;
+                formData.requirements = document.getElementById('seminar-requirements').value;
+            } else if (assignmentType === 'research') {
+                formData.startDate = document.getElementById('research-start-date').value;
+                formData.endDate = document.getElementById('research-end-date').value;
+                formData.projectTitle = document.getElementById('research-title').value;
+                formData.objectives = document.getElementById('research-objectives').value;
+                formData.methodology = document.getElementById('research-methodology').value;
+                formData.expectedOutput = document.getElementById('research-expected-output').value;
+                formData.teamSize = document.getElementById('research-team-size').value;
+            } else if (assignmentType === 'case-study') {
+                formData.caseTitle = document.getElementById('case-title').value;
+                formData.caseDescription = document.getElementById('case-description').value;
+                formData.objectives = document.getElementById('case-objectives').value;
+                formData.submissionDate = document.getElementById('case-submission-date').value;
+                formData.wordLimit = document.getElementById('case-word-limit').value;
+                formData.questions = document.getElementById('case-questions').value;
+            } else if (assignmentType === 'presentation') {
+                formData.presentationDate = document.getElementById('presentation-date').value;
+                formData.presentationTime = document.getElementById('presentation-time').value;
+                formData.topic = document.getElementById('presentation-topic').value;
+                formData.duration = document.getElementById('presentation-duration').value;
+                formData.maxSlides = document.getElementById('presentation-slides').value;
+                formData.requirements = document.getElementById('presentation-requirements').value;
+                formData.evaluationCriteria = document.getElementById('presentation-evaluation-criteria').value;
+            }
+
+            console.log('Proactive Assignment Data:', formData);
+            
+            // Show success message
+            const successMsg = document.getElementById('success-message');
+            successMsg.classList.remove('hidden');
+            successMsg.textContent = `Proactive Assignment "${formData.title}" created successfully!`;
+            
+            // Reset form
+            this.reset();
+            document.getElementById('dynamic-fields').classList.add('hidden');
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                successMsg.classList.add('hidden');
+            }, 5000);
+        });
+
+        // Load classes on page load
+        async function loadClasses() {
+            try {
+                const response = await fetch('/api/local/classes');
+                const data = await response.json();
+                const classSelect = document.getElementById('class-select');
+                
+                if (data.ok && data.classes) {
+                    data.classes.forEach(cls => {
+                        const option = document.createElement('option');
+                        option.value = cls.id;
+                        option.textContent = cls.name;
+                        classSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading classes:', error);
+            }
+        }
+
+        loadClasses();
+    </script>
+</body>
+</html>

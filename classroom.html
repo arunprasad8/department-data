@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Simple Classroom - Split & Assign</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;background:#f4f6f9;color:#333;padding:20px}
+    .card{background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid #d4af37;}
+    h1{margin:0 0 16px 0; color: #002147;}
+    h3{color: #002147; margin-top: 0;}
+    label{display:block;margin-bottom:6px;font-weight:600; color: #444;}
+    input[type=file], input[type=text], input[type=date], select{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px; box-sizing: border-box;}
+    input:focus, select:focus { border-color: #002147; outline: none; }
+    button{padding:10px 16px;border:none;border-radius:4px;background:#002147;color:#fff;cursor:pointer; font-weight: 600;}
+    button:hover { background: #003366; }
+    button.secondary{background:#6c757d}
+    pre{background:#00152e;color:#d4af37;padding:12px;border-radius:6px;overflow:auto}
+    table{width:100%;border-collapse:collapse; margin-top: 8px;}
+    th { background: #002147; color: #fff; }
+    th,td{padding:10px;border:1px solid #eee;text-align:left}
+  </style>
+</head>
+<body>
+  <h1>Simple Classroom Prototype</h1>
+  <p style="color:#666">Minimal flow: create class → upload roster → upload marks → Auto-split → assignment links & invites.</p>
+
+  <div class="card">
+    <h3>Create Local Class</h3>
+    <label>Class Name</label>
+    <input id="cls-name" type="text" placeholder="e.g., Data Structures - BCA2A">
+    <label style="margin-top:8px">Owner (username)</label>
+    <input id="cls-owner" type="text" placeholder="teacher_john">
+    <div style="margin-top:8px"><button id="create-class-btn">Create Class</button></div>
+    <div id="create-class-result" style="margin-top:8px;color:#28a745"></div>
+  </div>
+
+  <div class="card">
+    <h3>Select Class (for roster & marks)</h3>
+    <label>Select Class</label>
+    <select id="class-select"><option value="">-- choose class --</option></select>
+    <div style="margin-top:8px;color:#666;font-size:13px">Choose the class you created above to associate roster and marks.</div>
+  </div>
+
+  <div class="card">
+    <h3>Upload Student Roster (Excel)</h3>
+    <label>Roster file (.xlsx) with columns: Roll, Name, Email</label>
+    <input id="roster-file" type="file" accept=".xlsx,.xls">
+    <div style="margin-top:8px"><button id="upload-roster-btn">Upload Roster</button></div>
+    <div id="roster-status" style="margin-top:8px;color:#28a745"></div>
+  </div>
+
+  <div class="card">
+    <h3>Upload Assessment Marks (Excel)</h3>
+    <label>Assessment name</label>
+    <input id="assessment-name" type="text" placeholder="CIA 1">
+    <label style="margin-top:8px">Max Marks</label>
+    <input id="assessment-max" type="text" placeholder="100">
+    <label style="margin-top:8px">Marks file (.xlsx) with columns: Roll, Name, Marks</label>
+    <input id="marks-file" type="file" accept=".xlsx,.xls">
+    <div style="margin-top:8px"><button id="process-marks-btn">Process & Auto-Split</button></div>
+    <div id="process-status" style="margin-top:8px;color:#28a745"></div>
+  </div>
+
+  <div class="card">
+    <h3>Create Assignments</h3>
+    <p style="color:#666; margin-bottom: 16px;">Create specialized assignments for proactive and reactive learner groups.</p>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+      <a href="create-assignment.html" style="text-decoration: none;">
+        <button style="background: #002147; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600;">
+          ➕ Create New Assignment
+        </button>
+      </a>
+    </div>
+    <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 4px;">
+      <strong>Assignment Types:</strong>
+      <ul style="margin: 8px 0 0 0; color: #666;">
+        <li><strong>Proactive (≥60%):</strong> Workshop, Paper Submitting, Seminar, Research Project, Case Study, Presentation</li>
+        <li><strong>Reactive (<60%):</strong> Remedial Class, Extra Practice, Doubt Clearing, Assignment Resubmission, Tutorial Session</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Auto-split Result</h3>
+    <div id="auto-result">No result yet.</div>
+  </div>
+
+  <script>
+    async function fetchJson(url, opts) {
+      const r = await fetch(url, opts);
+      try { return await r.json(); } catch(e){ return {ok:false,error:'invalid-json',raw:r}; }
+    }
+
+    async function refreshClassList(){
+      const res = await fetchJson('/api/local/classes');
+      const sel = document.getElementById('class-select');
+      sel.innerHTML = '<option value="">-- choose class --</option>';
+      if (res.ok && Array.isArray(res.classes)){
+        res.classes.forEach(c=>{
+          const opt = document.createElement('option'); opt.value=c.id; opt.textContent=c.name + ' (' + c.owner + ')'; sel.appendChild(opt);
+        });
+      }
+    }
+
+    document.getElementById('create-class-btn').addEventListener('click', async ()=>{
+      const name = document.getElementById('cls-name').value.trim();
+      const owner = document.getElementById('cls-owner').value.trim() || 'teacher';
+      if (!name){ alert('Enter class name'); return; }
+      const j = await fetchJson('/api/local/create-class', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, description:'', owner }) });
+      if (j.ok){ document.getElementById('create-class-result').textContent = 'Created: ' + j.class.name; await refreshClassList(); }
+      else alert('Create failed: ' + JSON.stringify(j));
+    });
+
+    document.getElementById('upload-roster-btn').addEventListener('click', async ()=>{
+      const sel = document.getElementById('class-select'); const classId = sel.value;
+      if (!classId){ alert('Select class first'); return; }
+      const f = document.getElementById('roster-file').files[0]; if (!f){ alert('Choose roster file'); return; }
+      const data = new Uint8Array(await f.arrayBuffer()); const wb = XLSX.read(data,{type:'array'}); const sheet = wb.Sheets[wb.SheetNames[0]]; const rows = XLSX.utils.sheet_to_json(sheet,{defval:''});
+      // simple validation
+      if (!rows.length){ alert('Empty file'); return; }
+      // POST to server
+      const j = await fetchJson('/api/local/student-data',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ classId, students: rows }) });
+      if (j.ok){ document.getElementById('roster-status').textContent = 'Roster uploaded ('+rows.length+' students)'; }
+      else alert('Upload failed: '+ JSON.stringify(j));
+    });
+
+    document.getElementById('process-marks-btn').addEventListener('click', async ()=>{
+      const sel = document.getElementById('class-select'); const classId = sel.value;
+      if (!classId){ alert('Select class first'); return; }
+      const f = document.getElementById('marks-file').files[0]; if (!f){ alert('Choose marks file'); return; }
+      const assessment = document.getElementById('assessment-name').value.trim() || 'Assessment';
+      const maxMarks = parseFloat(document.getElementById('assessment-max').value) || 100;
+
+      const data = new Uint8Array(await f.arrayBuffer()); const wb = XLSX.read(data,{type:'array'}); const sheet = wb.Sheets[wb.SheetNames[0]]; const rows = XLSX.utils.sheet_to_json(sheet,{defval:''});
+      if (!rows.length){ alert('Empty file'); return; }
+
+      // Build assessment array with Roll and Score (Marks column expected)
+      const assessmentRows = rows.map(r=>({ Roll: r['Roll'] || r['Roll No'] || r['RollNo'] || r.Roll || '', Name: r['Name'] || r.Name || '', Score: parseFloat(r['Marks']||r.Marks||r.Score||0) }));
+
+      // Fetch uploaded students to match emails
+      const stuRes = await fetchJson('/api/local/student-data?classId=' + encodeURIComponent(classId));
+      const students = stuRes.ok && stuRes.students ? stuRes.students : [];
+      const studentMap = {};
+      students.forEach(s=>{ studentMap[(s.Roll||s.roll||'').toString().trim()] = s; });
+
+      // classify by 30% threshold
+      const threshold = (maxMarks * 30)/100;
+      const proactive = [], reactive = [];
+      assessmentRows.forEach(r=>{
+        const score = isNaN(r.Score) ? 0 : r.Score;
+        const roll = (r.Roll||'').toString().trim();
+        const student = studentMap[roll] || { Roll: roll, Name: r.Name || '', Email: '' };
+        const rec = { Roll: student.Roll || roll, Name: student.Name || r.Name || '', Email: student.Email || '' , Score: score };
+        if (score >= threshold) proactive.push(rec); else reactive.push(rec);
+      });
+
+      // POST to application-level auto-split endpoint
+      document.getElementById('process-status').textContent = 'Processing...';
+      const out = await fetchJson('/api/local/auto-split', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ baseClassId: classId, proactive, reactive, assessmentName: assessment, createdBy: (document.getElementById('cls-owner').value||'teacher') }) });
+      document.getElementById('process-status').textContent = '';
+      if (!out.ok){ alert('Auto-split failed: '+ JSON.stringify(out)); return; }
+
+      const area = document.getElementById('auto-result');
+      area.innerHTML = '';
+      const sum = out.summary || {};
+      const div = document.createElement('div');
+      div.innerHTML = '<strong>Created classes:</strong>' + (sum.createdClasses ? sum.createdClasses.map(c=> '<div>'+c.name + ' ('+c.id+')' +'</div>').join('') : ' none');
+      if (sum.assignments && sum.assignments.length){ div.innerHTML += '<hr><strong>Assignments created:</strong>' + sum.assignments.map(a=>'<div>'+a.title+' (class: '+a.classId+')</div>').join(''); }
+      if (sum.invites && sum.invites.length){ div.innerHTML += '<hr><strong>Invites sent:</strong>' + sum.invites.map(i=>'<div>'+i.email + ' → <a href="'+i.link+'" target="_blank">open link</a></div>').join(''); }
+      area.appendChild(div);
+      await refreshClassList();
+    });
+
+    // initial load
+    refreshClassList();
+  </script>
+</body>
+</html>

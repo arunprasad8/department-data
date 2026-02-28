@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reactive Assignments - CIA Classroom</title>
+    <style>
+        :root {
+            --christ-blue: #002147;
+            --christ-gold: #d4af37;
+            --christ-white: #ffffff;
+            --bg-light: #f4f6f9;
+            --success-green: #28a745;
+            --reactive-orange: #fd7e14;
+            --reactive-red: #dc3545;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(to right, var(--reactive-orange), var(--reactive-red));
+            color: var(--christ-white);
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 3px solid var(--christ-gold);
+        }
+        .header h1 {
+            margin: 0;
+            color: var(--christ-white);
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            color: #fff;
+        }
+        .card {
+            background: var(--christ-white);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .card-header {
+            border-bottom: 2px solid var(--reactive-orange);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .card-header h2 {
+            color: var(--christ-blue);
+            margin: 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #444;
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--christ-blue);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 33, 71, 0.2);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background-color: var(--christ-blue);
+            color: var(--christ-white);
+        }
+        .btn-primary:hover {
+            background-color: #003366;
+        }
+        .btn-warning {
+            background-color: var(--reactive-orange);
+            color: var(--christ-white);
+        }
+        .btn-warning:hover {
+            background-color: #e9690a;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: var(--christ-white);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .hidden {
+            display: none;
+        }
+        .assignment-type-section {
+            background: #fff3e0;
+            border-left: 4px solid var(--reactive-orange);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .required-fields {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        .required-fields h3 {
+            color: var(--christ-blue);
+            margin-top: 0;
+            font-size: 16px;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 15px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: var(--christ-blue);
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .remedial-badge {
+            display: inline-block;
+            background: var(--reactive-red);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+        
+        <div class="header">
+            <h1>📚 Reactive Assignments</h1>
+            <p>Create remedial assignments for reactive learners <span class="remedial-badge">Remedial Focus</span></p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Create New Assignment for Reactive Learners</h2>
+            </div>
+
+            <form id="reactive-assignment-form">
+                <!-- Assignment Type Dropdown -->
+                <div class="assignment-type-section">
+                    <div class="form-group">
+                        <label for="assignment-type">Select Assignment Type:</label>
+                        <select id="assignment-type" required>
+                            <option value="">-- Select Assignment Type --</option>
+                            <option value="remedial">📖 Remedial Class</option>
+                            <option value="practice">✏️ Extra Practice</option>
+                            <option value="doubt">❓ Doubt Clearing Session</option>
+                            <option value="resubmission">🔄 Assignment Resubmission</option>
+                            <option value="tutorial">📚 Tutorial Session</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Common Fields -->
+                <div class="form-group">
+                    <label for="assignment-title">Assignment Title:</label>
+                    <input type="text" id="assignment-title" placeholder="Enter assignment title" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="class-select">Select Class:</label>
+                        <select id="class-select" required>
+                            <option value="">-- Select Class --</option>
+                            <!-- Classes will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject:</label>
+                        <input type="text" id="subject" placeholder="e.g., Data Structures" required>
+                    </div>
+                </div>
+
+                <!-- Dynamic Required Fields (shown based on assignment type) -->
+                <div id="dynamic-fields" class="required-fields hidden">
+                    <h3>Required Fields</h3>
+                    
+                    <!-- Remedial Class Fields -->
+                    <div id="remedial-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="remedial-date">Class Date:</label>
+                                <input type="date" id="remedial-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="remedial-time">Class Time:</label>
+                                <input type="time" id="remedial-time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="remedial-venue">Venue:</label>
+                            <input type="text" id="remedial-venue" placeholder="e.g., Room 101">
+                        </div>
+                        <div class="form-group">
+                            <label for="remedial-topics">Topics to Cover:</label>
+                            <textarea id="remedial-topics" placeholder="List topics that need remedial attention"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="remedial-concepts">Key Concepts to Review:</label>
+                            <textarea id="remedial-concepts" placeholder="Specific concepts students are struggling with"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="remedial-materials">Study Materials Required:</label>
+                            <textarea id="remedial-materials" placeholder="Notes, worksheets, reference books"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="remedial-duration">Duration (minutes):</label>
+                                <input type="number" id="remedial-duration" placeholder="e.g., 60" min="15">
+                            </div>
+                            <div class="form-group">
+                                <label for="remedial-expected">Expected Attendance:</label>
+                                <input type="number" id="remedial-expected" placeholder="e.g., 20" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Extra Practice Fields -->
+                    <div id="practice-fields" class="assignment-fields hidden">
+                        <div class="form-group">
+                            <label for="practice-type">Practice Type:</label>
+                            <select id="practice-type">
+                                <option value="">-- Select Type --</option>
+                                <option value="worksheet">Worksheet</option>
+                                <option value="quiz">Online Quiz</option>
+                                <option value="homework">Homework</option>
+                                <option value="exercises"> exercises</option>
+                                <option value="problems">Problem Set</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="practice-topic">Topic:</label>
+                            <input type="text" id="practice-topic" placeholder="Practice topic">
+                        </div>
+                        <div class="form-group">
+                            <label for="practice-questions">Number of Questions:</label>
+                            <input type="number" id="practice-questions" placeholder="e.g., 20" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="practice-difficulty">Difficulty Level:</label>
+                            <select id="practice-difficulty">
+                                <option value="">-- Select Level --</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                                <option value="mixed">Mixed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="practice-instructions">Instructions:</label>
+                            <textarea id="practice-instructions" placeholder="How students should complete the practice"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="practice-resources">Reference Materials:</label>
+                            <textarea id="practice-resources" placeholder="Textbook chapters, notes, etc."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="practice-due">Due Date:</label>
+                                <input type="date" id="practice-due">
+                            </div>
+                            <div class="form-group">
+                                <label for="practice-attempts">Max Attempts:</label>
+                                <input type="number" id="practice-attempts" placeholder="e.g., 3" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Doubt Clearing Session Fields -->
+                    <div id="doubt-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="doubt-date">Session Date:</label>
+                                <input type="date" id="doubt-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="doubt-time">Session Time:</label>
+                                <input type="time" id="doubt-time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="doubt-venue">Venue / Platform:</label>
+                            <input type="text" id="doubt-venue" placeholder="e.g., Room 201 or Google Meet Link">
+                        </div>
+                        <div class="form-group">
+                            <label for="doubt-topics">Topics to Cover:</label>
+                            <textarea id="doubt-topics" placeholder="List topics students can ask doubts about"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="doubt-preparation">Pre-Session Preparation:</label>
+                            <textarea id="doubt-preparation" placeholder="What students should prepare before the session"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="doubt-duration">Duration (minutes):</label>
+                                <input type="number" id="doubt-duration" placeholder="e.g., 60" min="15">
+                            </div>
+                            <div class="form-group">
+                                <label for="doubt-mode">Mode:</label>
+                                <select id="doubt-mode">
+                                    <option value="">-- Select Mode --</option>
+                                    <option value="offline">In-Person</option>
+                                    <option value="online">Online</option>
+                                    <option value="hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assignment Resubmission Fields -->
+                    <div id="resubmission-fields" class="assignment-fields hidden">
+                        <div class="form-group">
+                            <label for="resub-original">Original Assignment Name:</label>
+                            <input type="text" id="resub-original" placeholder="Name of the original assignment">
+                        </div>
+                        <div class="form-group">
+                            <label for="resub-issues">Common Issues to Address:</label>
+                            <textarea id="resub-issues" placeholder="List common mistakes or areas needing improvement"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="resub-deadline">Resubmission Deadline:</label>
+                                <input type="date" id="resub-deadline">
+                            </div>
+                            <div class="form-group">
+                                <label for="resub-penalty">Late Penalty:</label>
+                                <input type="text" id="resub-penalty" placeholder="e.g., 10% per day">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="resub-requirements">Resubmission Requirements:</label>
+                            <textarea id="resub-requirements" placeholder="What must be corrected or added"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="resub-feedback">Feedback from Original:</label>
+                            <textarea id="resub-feedback" placeholder="General feedback for all students"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="resub-format">Format Requirements:</label>
+                            <textarea id="resub-format" placeholder="File format, naming convention, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Tutorial Session Fields -->
+                    <div id="tutorial-fields" class="assignment-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tutorial-date">Session Date:</label>
+                                <input type="date" id="tutorial-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="tutorial-time">Session Time:</label>
+                                <input type="time" id="tutorial-time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tutorial-venue">Venue:</label>
+                            <input type="text" id="tutorial-venue" placeholder="e.g., Tutorial Room">
+                        </div>
+                        <div class="form-group">
+                            <label for="tutorial-subject">Focus Subject:</label>
+                            <input type="text" id="tutorial-subject" placeholder="Subject for tutorial">
+                        </div>
+                        <div class="form-group">
+                            <label for="tutorial-topics">Topics to Cover:</label>
+                            <textarea id="tutorial-topics" placeholder="Detailed topics for the tutorial"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="tutorial-objectives">Learning Objectives:</label>
+                            <textarea id="tutorial-objectives" placeholder="What students should achieve"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tutorial-duration">Duration (minutes):</label>
+                                <input type="number" id="tutorial-duration" placeholder="e.g., 90" min="30">
+                            </div>
+                            <div class="form-group">
+                                <label for="tutorial-max">Max Students:</label>
+                                <input type="number" id="tutorial-max" placeholder="e.g., 15" min="1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tutorial-materials">Materials to Bring:</label>
+                            <textarea id="tutorial-materials" placeholder="Textbooks, notes, assignment papers"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="assignment-description">Additional Instructions:</label>
+                    <textarea id="assignment-description" placeholder="Any additional instructions for students"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="due-date">Due Date (if applicable):</label>
+                        <input type="date" id="due-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="max-marks">Max Marks:</label>
+                        <input type="number" id="max-marks" placeholder="e.g., 100" min="1">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-warning">Create Reactive Assignment</button>
+            </form>
+
+            <div id="success-message" class="success-message hidden">
+                Assignment created successfully!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Assignment type change handler
+        document.getElementById('assignment-type').addEventListener('change', function() {
+            const selectedType = this.value;
+            const dynamicFields = document.getElementById('dynamic-fields');
+            const allFields = document.querySelectorAll('.assignment-fields');
+            
+            // Hide all specific fields first
+            allFields.forEach(field => field.classList.add('hidden'));
+            
+            if (selectedType) {
+                dynamicFields.classList.remove('hidden');
+                const specificFields = document.getElementById(selectedType + '-fields');
+                if (specificFields) {
+                    specificFields.classList.remove('hidden');
+                }
+            } else {
+                dynamicFields.classList.add('hidden');
+            }
+        });
+
+        // Form submission handler
+        document.getElementById('reactive-assignment-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const assignmentType = document.getElementById('assignment-type').value;
+            const formData = {
+                type: 'reactive',
+                assignmentType: assignmentType,
+                title: document.getElementById('assignment-title').value,
+                classId: document.getElementById('class-select').value,
+                subject: document.getElementById('subject').value,
+                description: document.getElementById('assignment-description').value,
+                dueDate: document.getElementById('due-date').value,
+                maxMarks: document.getElementById('max-marks').value,
+                createdAt: new Date().toISOString()
+            };
+
+            // Add type-specific fields
+            if (assignmentType === 'remedial') {
+                formData.classDate = document.getElementById('remedial-date').value;
+                formData.classTime = document.getElementById('remedial-time').value;
+                formData.venue = document.getElementById('remedial-venue').value;
+                formData.topics = document.getElementById('remedial-topics').value;
+                formData.concepts = document.getElementById('remedial-concepts').value;
+                formData.materials = document.getElementById('remedial-materials').value;
+                formData.duration = document.getElementById('remedial-duration').value;
+                formData.expectedAttendance = document.getElementById('remedial-expected').value;
+            } else if (assignmentType === 'practice') {
+                formData.practiceType = document.getElementById('practice-type').value;
+                formData.topic = document.getElementById('practice-topic').value;
+                formData.numQuestions = document.getElementById('practice-questions').value;
+                formData.difficulty = document.getElementById('practice-difficulty').value;
+                formData.instructions = document.getElementById('practice-instructions').value;
+                formData.resources = document.getElementById('practice-resources').value;
+                formData.dueDate = document.getElementById('practice-due').value;
+                formData.maxAttempts = document.getElementById('practice-attempts').value;
+            } else if (assignmentType === 'doubt') {
+                formData.sessionDate = document.getElementById('doubt-date').value;
+                formData.sessionTime = document.getElementById('doubt-time').value;
+                formData.venue = document.getElementById('doubt-venue').value;
+                formData.topics = document.getElementById('doubt-topics').value;
+                formData.preparation = document.getElementById('doubt-preparation').value;
+                formData.duration = document.getElementById('doubt-duration').value;
+                formData.mode = document.getElementById('doubt-mode').value;
+            } else if (assignmentType === 'resubmission') {
+                formData.originalAssignment = document.getElementById('resub-original').value;
+                formData.issues = document.getElementById('resub-issues').value;
+                formData.deadline = document.getElementById('resub-deadline').value;
+                formData.penalty = document.getElementById('resub-penalty').value;
+                formData.requirements = document.getElementById('resub-requirements').value;
+                formData.feedback = document.getElementById('resub-feedback').value;
+                formData.format = document.getElementById('resub-format').value;
+            } else if (assignmentType === 'tutorial') {
+                formData.sessionDate = document.getElementById('tutorial-date').value;
+                formData.sessionTime = document.getElementById('tutorial-time').value;
+                formData.venue = document.getElementById('tutorial-venue').value;
+                formData.focusSubject = document.getElementById('tutorial-subject').value;
+                formData.topics = document.getElementById('tutorial-topics').value;
+                formData.objectives = document.getElementById('tutorial-objectives').value;
+                formData.duration = document.getElementById('tutorial-duration').value;
+                formData.maxStudents = document.getElementById('tutorial-max').value;
+                formData.materials = document.getElementById('tutorial-materials').value;
+            }
+
+            console.log('Reactive Assignment Data:', formData);
+            
+            // Show success message
+            const successMsg = document.getElementById('success-message');
+            successMsg.classList.remove('hidden');
+            successMsg.textContent = `Reactive Assignment "${formData.title}" created successfully!`;
+            
+            // Reset form
+            this.reset();
+            document.getElementById('dynamic-fields').classList.add('hidden');
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                successMsg.classList.add('hidden');
+            }, 5000);
+        });
+
+        // Load classes on page load
+        async function loadClasses() {
+            try {
+                const response = await fetch('/api/local/classes');
+                const data = await response.json();
+                const classSelect = document.getElementById('class-select');
+                
+                if (data.ok && data.classes) {
+                    data.classes.forEach(cls => {
+                        const option = document.createElement('option');
+                        option.value = cls.id;
+                        option.textContent = cls.name;
+                        classSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading classes:', error);
+            }
+        }
+
+        loadClasses();
+    </script>
+</body>
+</html>

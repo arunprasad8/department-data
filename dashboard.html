@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIA Dashboard - Main</title>
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --christ-blue: #002147;
+            --christ-gold: #d4af37;
+            --christ-white: #ffffff;
+            --bg-light: #f4f6f9;
+        }
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        /* Navbar overrides */
+        .navbar {
+            background: linear-gradient(to right, var(--christ-blue), #003366) !important;
+            border-bottom: 3px solid var(--christ-gold);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .nav-brand h2 {
+            color: var(--christ-white) !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .user-info {
+            color: var(--christ-gold) !important;
+            font-weight: 600;
+        }
+        .user-role {
+            background-color: rgba(212, 175, 55, 0.2);
+            color: var(--christ-gold) !important;
+            border: 1px solid var(--christ-gold);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .btn-home, .logout-btn {
+            background: transparent !important;
+            border: 1px solid var(--christ-white) !important;
+            color: var(--christ-white) !important;
+        }
+        .btn-home:hover, .logout-btn:hover {
+            background: var(--christ-gold) !important;
+            color: var(--christ-blue) !important;
+            border-color: var(--christ-gold) !important;
+        }
+        
+        /* General UI */
+        h1, h2, h3, h4, h5 {
+            color: var(--christ-blue);
+        }
+        .btn-submit {
+            background-color: var(--christ-blue) !important;
+            color: var(--christ-white) !important;
+            border: none;
+            transition: transform 0.1s;
+        }
+        .btn-submit:hover {
+            background-color: #003366 !important;
+            transform: translateY(-1px);
+        }
+        .btn-back {
+            background-color: #6c757d !important;
+            color: white !important;
+        }
+        
+        /* Cards/Containers */
+        .view-section, #dashboard {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-top: 20px;
+            border-top: 4px solid var(--christ-blue);
+        }
+        
+        /* Tables */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th {
+            background-color: var(--christ-blue) !important;
+            color: var(--christ-gold) !important;
+        }
+        
+        /* Inputs */
+        input[type="text"], input[type="number"], input[type="date"], input[type="password"], select {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+        }
+        input:focus, select:focus {
+            border-color: var(--christ-blue);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 33, 71, 0.2);
+        }
+
+        /* Tab styles */
+        .dashboard-tabs {
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1em;
+            color: #495057;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px; /* Overlap with container border */
+        }
+        .tab-btn.active {
+            color: var(--christ-blue);
+            font-weight: 600;
+            border-bottom-color: var(--christ-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>CIA Dashboard</h2>
+            </div>
+            <div class="nav-user">
+                <span id="user-name" class="user-info"></span>
+                <span id="user-role" class="user-role"></span>
+                <button id="home-btn" class="btn-home" title="Home">Home</button>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Main Dashboard Area -->
+        <main class="main-content">
+            <!-- Admin Dashboard View -->
+            <div id="admin-view" class="view-section" style="display: none;">
+                <h1>Admin Dashboard - Full System Access</h1>
+                <p id="admin-info" class="role-info"></p>
+
+                <div class="access-grid">
+                    <h2>All Classes & Subjects</h2>
+                    <div id="admin-classes-container" class="classes-container">
+                        <!-- Classes will be populated here -->
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <h2>Upload Marks Data</h2>
+                    <form id="admin-upload-form">
+                        <div class="form-group">
+                            <label for="admin-subject-input">Subject Name:</label>
+                            <input type="text" id="admin-subject-input" placeholder="e.g., Data Structures" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-class-input">Class:</label>
+                            <input type="text" id="admin-class-input" placeholder="e.g., B.Tech-CSE-2A" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-max-marks-input">Max Marks:</label>
+                            <input type="number" id="admin-max-marks-input" placeholder="e.g., 100" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-file-input">Upload Excel File:</label>
+                            <input type="file" id="admin-file-input" accept=".xlsx,.xls" required>
+                        </div>
+                        <button type="submit" class="btn-submit">Process Data</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Class Teacher Dashboard View -->
+            <div id="classTeacher-view" class="view-section" style="display: none;">
+                <h1>Class Teacher Dashboard</h1>
+                <p id="ct-info" class="role-info"></p>
+
+                <div class="access-grid">
+                    <h2>My Class Subjects</h2>
+                    <div id="ct-subjects-container" class="classes-container">
+                        <!-- Subjects will be populated here -->
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <h2>Upload Marks Data for My Class</h2>
+                    <form id="ct-upload-form">
+                        <div class="form-group">
+                            <label for="ct-subject-input">Subject Name:</label>
+                            <input type="text" id="ct-subject-input" placeholder="e.g., Data Structures" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ct-max-marks-input">Max Marks:</label>
+                            <input type="number" id="ct-max-marks-input" placeholder="e.g., 100" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ct-file-input">Upload Excel File:</label>
+                            <input type="file" id="ct-file-input" accept=".xlsx,.xls" required>
+                        </div>
+                        <button type="submit" class="btn-submit">Process Data</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Teacher Dashboard View -->
+            <div id="teacher-view" class="view-section" style="display: none;">
+                <h1>Teacher Dashboard</h1>
+                <p id="teacher-info" class="role-info"></p>
+
+                <div class="access-grid">
+                    <h2>My Subject</h2>
+                    <div id="teacher-subject-container" class="classes-container">
+                        <!-- Subject will be populated here -->
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <h2>Upload Marks Data for My Subject</h2>
+                    <form id="teacher-upload-form">
+                        <div class="form-group">
+                            <label for="teacher-max-marks-input">Max Marks:</label>
+                            <input type="number" id="teacher-max-marks-input" placeholder="e.g., 100" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher-file-input">Upload Excel File:</label>
+                            <input type="file" id="teacher-file-input" accept=".xlsx,.xls" required>
+                        </div>
+                        <button type="submit" class="btn-submit">Process Data</button>
+                    </form>
+                </div>
+
+                <div style="margin-top:18px; padding:12px; background:#fff; border-radius:6px;">
+                    <h2>Local Classroom (My Classes)</h2>
+                    <button id="create-local-class-btn" class="btn-submit" style="margin-bottom:12px;">+ Create New Class</button>
+                    <div id="create-class-form-section" style="display:none; margin-bottom:16px; padding:12px; background:#f8f9fa; border-radius:6px;">
+                        <h3>Create Local Class</h3>
+                        <form id="create-class-form">
+                            <div class="form-group">
+                                <label for="new-class-name">Class Name:</label>
+                                <input type="text" id="new-class-name" placeholder="e.g., Data Structures - BCA2A" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-class-description">Description (optional):</label>
+                                <input type="text" id="new-class-description" placeholder="e.g., Assignment submission portal">
+                            </div>
+                            <div class="button-group">
+                                <button type="submit" class="btn-submit">Create Class</button>
+                                <button type="button" id="cancel-create-class-btn" class="btn-back">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="local-classes-container">Loading classes...</div>
+                </div>
+
+                <div style="margin-top:18px; padding:12px; background:#fff; border-radius:6px;">
+                    <h2>📅 Department Events</h2>
+                    <p style="color:#666; margin-bottom:12px;">Create and manage department events, submit for HOD approval, and receive event notifications.</p>
+                    <button id="events-btn" class="btn-submit" style="margin-bottom:12px;">📅 Go to Events Management</button>
+                </div>
+            </div>
+
+            <!-- IT Admin Dashboard View -->
+            <div id="itadmin-view" class="view-section" style="display: none;">
+                <h1>IT Admin Dashboard - User Management</h1>
+                <p id="itadmin-info" class="role-info"></p>
+
+                <div class="management-section">
+                    <h2>Teacher Management</h2>
+                    <button id="create-teacher-btn" class="btn-submit" style="margin-bottom: 12px;">+ Create New Teacher Profile</button>
+
+                    <div id="teachers-list-container" class="classes-container">
+                        <!-- Teachers list will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Create/Edit Teacher Form (Hidden by default) -->
+                <div id="teacher-form-section" style="display: none; margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 6px;">
+                    <h3 id="form-title">Create New Teacher Profile</h3>
+                    <form id="teacher-management-form">
+                        <div class="form-group">
+                            <label for="teacher-name-input">Full Name:</label>
+                            <input type="text" id="teacher-name-input" placeholder="e.g., Dr. Anil Verma" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher-username-input">Username:</label>
+                            <input type="text" id="teacher-username-input" placeholder="e.g., teacher_anil" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher-password-input">Password (visible):</label>
+                            <input type="text" id="teacher-password-input" placeholder="Enter password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher-dept-select">Department:</label>
+                            <select id="teacher-dept-select">
+                                <option value="Computer Science">Computer Science</option>
+                            </select>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn-submit">Save Teacher</button>
+                            <button type="button" id="cancel-teacher-btn" class="btn-back">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Scheduling / Calendar for IT Department -->
+                <div id="scheduling-section" style="margin-top: 24px; padding: 16px; background: #fff; border-radius:6px;">
+                    <h3>Exam Scheduling (IT Department)</h3>
+                    <p style="color:#666;">Schedule CIA weeks, deadlines and other exams. Teachers will be notified and must pick a date within the scheduled window.</p>
+                    <form id="schedule-form" style="display:flex; flex-wrap:wrap; gap:12px; align-items:end;">
+                        <div style="flex:1; min-width:160px;">
+                            <label for="schedule-exam">Exam Name</label>
+                            <select id="schedule-exam">
+                                <option value="CIA 1">CIA 1</option>
+                                <option value="CIA 2">CIA 2</option>
+                                <option value="Mid Sem">Mid Sem</option>
+                                <option value="CIA 3">CIA 3</option>
+                                <option value="CIA 4">CIA 4</option>
+                                <option value="End Sem">End Sem</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:160px;">
+                            <label for="schedule-scope">Apply To</label>
+                            <select id="schedule-scope">
+                                <option value="all">All Classes (default)</option>
+                                <option value="custom">Custom (class / subject)</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:160px; display:none;" id="schedule-class-wrap">
+                            <label for="schedule-class">Class (for custom)</label>
+                            <select id="schedule-class">
+                                <option value="">Select Class...</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:160px; display:none;" id="schedule-subject-wrap">
+                            <label for="schedule-subject">Subject (for custom)</label>
+                            <select id="schedule-subject">
+                                <option value="">Select Subject...</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:160px;">
+                            <label for="schedule-start">Start Date</label>
+                            <input type="date" id="schedule-start">
+                        </div>
+                        <div style="flex:1; min-width:160px;">
+                            <label for="schedule-end">End Date</label>
+                            <input type="date" id="schedule-end">
+                        </div>
+                        <div style="flex:1; min-width:160px;">
+                            <label for="schedule-deadline">Upload Deadline</label>
+                            <input type="date" id="schedule-deadline">
+                        </div>
+                        <div style="min-width:160px;">
+                            <button id="save-schedule-btn" class="btn-submit" type="button">Save Schedule</button>
+                        </div>
+                    </form>
+
+                    <div style="margin-top:12px;">
+                        <h4>Existing Schedules</h4>
+                        <div id="schedules-list" style="margin-top:8px;">
+                            <!-- schedule items -->
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top:16px;">
+                        <h4>Calendar (Month view)</h4>
+                        <div id="schedule-calendar-controls" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <button id="cal-prev" type="button" class="btn-back">◀</button>
+                            <div id="cal-month-year" style="font-weight:600"></div>
+                            <button id="cal-next" type="button" class="btn-back">▶</button>
+                        </div>
+                        <div id="schedule-calendar" style="background:#fff; padding:8px; border-radius:6px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOD Dashboard View - Teacher Assignment Management -->
+            <div id="hod-view" class="view-section" style="display: none;">
+                <h1>HOD - Teacher & Subject Management</h1>
+                <p id="hod-info" class="role-info"></p>
+
+                <div class="management-section">
+                    <h2>Manage Teacher Assignments</h2>
+                    <p style="color: #666; margin-bottom: 16px;">Assign subjects and classes to teachers, or modify existing assignments.</p>
+                    
+                    <div id="hod-teachers-container" class="classes-container">
+                        <!-- Teachers assignment management will be populated here -->
+                    </div>
+                    
+                    <div style="margin-top:16px;">
+                        <h3>Unassigned Subjects</h3>
+                        <p style="color:#666; margin-bottom:8px;">Subjects currently without a teacher. Click <strong>Assign</strong> to assign a teacher.</p>
+                        <div id="hod-unassigned-container" class="classes-container">
+                            <!-- Unassigned subjects will be listed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teacher Assignment Form (Hidden by default) -->
+                <div id="hod-assignment-form-section" style="display: none; margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 6px;">
+                    <h3>Modify Teacher Assignment</h3>
+                    <form id="hod-assignment-form">
+                        <div class="form-group">
+                            <label for="hod-teacher-select">Select Teacher:</label>
+                            <select id="hod-teacher-select" required>
+                                <option value="">Select Teacher...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hod-subject-input">Subject:</label>
+                            <input type="text" id="hod-subject-input" placeholder="Current subject" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="hod-new-subject-select">Change Subject To:</label>
+                            <select id="hod-new-subject-select" required>
+                                <option value="">Select New Subject...</option>
+                                <option value="Data Structures">Data Structures</option>
+                                <option value="Database Systems">Database Systems</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Digital Fundamentals">Digital Fundamentals</option>
+                                <option value="Computer Maintenance">Computer Maintenance</option>
+                                <option value="Operating Systems">Operating Systems</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hod-class-input">Class:</label>
+                            <input type="text" id="hod-class-input" placeholder="Current class" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="hod-new-class-select">Change Class To:</label>
+                            <select id="hod-new-class-select" required>
+                                <option value="">Select New Class...</option>
+                                <option value="BCA-2A">BCA - 2A</option>
+                                <option value="BSc-CM-2B">B.Sc CM - 2B</option>
+                            </select>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn-submit">Update Assignment</button>
+                            <button type="button" id="cancel-assignment-btn" class="btn-back">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Scheduling / Calendar for HOD (read-only) -->
+                <div id="hod-scheduling-section" style="margin-top: 24px; padding: 16px; background: #fff; border-radius:6px;">
+                    <h3>Exam Schedules (View Only)</h3>
+                    <p style="color:#666;">View all scheduled CIA weeks, deadlines and other exams. (HOD cannot create or delete schedules)</p>
+                    <div style="margin-top:12px;">
+                        <h4>Existing Schedules</h4>
+                        <div id="hod-schedules-list" style="margin-top:8px;"></div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <h4>Calendar (Month view)</h4>
+                        <div id="hod-schedule-calendar-controls" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <button id="hod-cal-prev" type="button" class="btn-back">◀</button>
+                            <div id="hod-cal-month-year" style="font-weight:600"></div>
+                            <button id="hod-cal-next" type="button" class="btn-back">▶</button>
+                        </div>
+                        <div id="hod-schedule-calendar" style="background:#fff; padding:8px; border-radius:6px;"></div>
+                    </div>
+                </div>
+
+                <!-- Events Management Section -->
+                <div style="margin-top:24px; padding:16px; background:#fff; border-radius:6px;">
+                    <h3>📅 Department Events - Approvals</h3>
+                    <p style="color:#666; margin-bottom:12px;">Review and approve/reject pending events submitted by teachers. Participate in event discussions.</p>
+                    <button id="hod-events-btn" class="btn-submit" style="margin-bottom:12px;">📅 Go to Event Approvals</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Dashboard Area (when viewing data) -->
+        <div id="dashboard" style="display: none;">
+            <button id="back-btn" class="btn-back">← Back to Dashboard</button>
+            <h2 id="dashboard-title">Dashboard for <span id="selected-subject"></span></h2>
+
+            <div style="margin:8px 0; display:flex; gap:8px; align-items:center;">
+                <label for="associate-local-class-select" style="margin-right:6px;">Associate Local Class:</label>
+                <select id="associate-local-class-select" style="min-width:260px;">
+                    <option value="">-- Select Local Class (optional) --</option>
+                </select>
+                <span id="associated-local-class-info" style="color:#666; margin-left:8px;"></span>
+            </div>
+
+            <!-- Main View Tabs -->
+            <div id="subject-view-tabs" class="dashboard-tabs">
+                <button class="tab-btn active" data-view="performance">CIA Performance</button>
+                <button class="tab-btn" data-view="classroom">Classroom</button>
+            </div>
+
+            <!-- Performance View -->
+            <div id="performance-content-wrapper">
+                <div id="assessment-tabs" class="dashboard-tabs">
+                    <button class="tab-btn active" data-assessment="CIA 1">CIA 1</button>
+                    <button class="tab-btn" data-assessment="CIA 2">CIA 2</button>
+                    <button class="tab-btn" data-assessment="Mid Sem">Mid Sem</button>
+                    <button class="tab-btn" data-assessment="CIA 3">CIA 3</button>
+                    <button class="tab-btn" data-assessment="CIA 4">CIA 4</button>
+                    <button class="tab-btn" data-assessment="End Sem">End Sem</button>
+                </div>
+
+                <section id="stats-section">
+                    <h3>Basic Statistics</h3>
+                    <table id="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Not Attended</td><td id="not-attended">-</td></tr>
+                            <tr><td>MIN</td><td id="min-score">-</td></tr>
+                            <tr><td>MAX</td><td id="max-score">-</td></tr>
+                            <tr><td>AVG</td><td id="avg-score">-</td></tr>
+                            <tr><td>STDEV</td><td id="stdev-score">-</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="bins-section">
+                    <h3>Performance Distribution (%)</h3>
+                    <table id="bins-table">
+                        <thead>
+                            <tr>
+                                <th>Range</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>&ge;90%</td><td id="bin-90">-</td><td id="pct-90">-</td></tr>
+                            <tr><td>85% - 89%</td><td id="bin-85">-</td><td id="pct-85">-</td></tr>
+                            <tr><td>80% - 84%</td><td id="bin-80">-</td><td id="pct-80">-</td></tr>
+                            <tr><td>75% - 79%</td><td id="bin-75">-</td><td id="pct-75">-</td></tr>
+                            <tr><td>70% - 74%</td><td id="bin-70">-</td><td id="pct-70">-</td></tr>
+                            <tr><td>65% - 69%</td><td id="bin-65">-</td><td id="pct-65">-</td></tr>
+                            <tr><td>60% - 64%</td><td id="bin-60">-</td><td id="pct-60">-</td></tr>
+                            <tr><td>50% - 59%</td><td id="bin-50">-</td><td id="pct-50">-</td></tr>
+                            <tr><td>40% - 49%</td><td id="bin-40">-</td><td id="pct-40">-</td></tr>
+                            <tr><td>< 40%</td><td id="bin-below40">-</td><td id="pct-below40">-</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="risk-section">
+                    <h3>Performance Measure</h3>
+                    <div class="avg-display">
+                        <strong>Average Score: <span id="avg-display">-</span></strong>
+                    </div>
+                    <canvas id="risk-chart" width="400" height="200"></canvas>
+                </section>
+
+                <section id="bins-chart-section">
+                    <h3>Performance Distribution Chart</h3>
+                    <canvas id="bins-chart" width="600" height="300"></canvas>
+                </section>
+
+                <section id="student-chart-section">
+                    <h3>Individual Student Marks</h3>
+                    <p>Passing Mark: 20/100 (horizontal line)</p>
+                    <canvas id="student-chart" width="800" height="400"></canvas>
+                </section>
+
+                <!-- Upload section for per-assessment dashboards (hidden for Overall) -->
+                <div id="upload-section" style="display: none; margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 6px;">
+                    <h3>Update Marks Data</h3>
+                    <form id="assessment-upload-form">
+                        <div class="form-group">
+                            <label for="assessment-upload-file">Upload Excel File:</label>
+                            <input type="file" id="assessment-upload-file" accept=".xlsx,.xls" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="assessment-max-marks-input">Max Marks:</label>
+                            <input type="number" id="assessment-max-marks-input" placeholder="e.g., 100" min="1" required>
+                        </div>
+                        <button type="submit" class="btn-submit">Update Dashboard</button>
+                    </form>
+                </div>
+
+                <!-- Excel data display table for per-assessment dashboards (hidden for Overall) -->
+                <div id="data-display-section" style="display: none; margin-top: 20px;">
+                    <h3>Uploaded Data</h3>
+                    <div style="overflow-x: auto;">
+                        <table id="data-display-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="critical-students" style="display: none;">
+                    <section id="critical-section">
+                        <h3>Low-Performing Students (Score < 20)</h3>
+                        <table id="low-students-table">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Name</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="low-students-body">
+                            </tbody>
+                        </table>
+                        <div id="improvement-solutions">
+                            <h4>Possible Solutions to Improve Scores:</h4>
+                            <ul>
+                                <li>Conduct one-on-one remedial sessions focusing on weak areas.</li>
+                                <li>Assign additional practice materials and monitor progress weekly.</li>
+                                <li>Involve parents for home support and motivation.</li>
+                                <li>Reassess teaching methods; incorporate interactive learning tools.</li>
+                                <li>Provide extra classes or peer tutoring for foundational gaps.</li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Classroom View -->
+            <div id="classroom-content-wrapper" style="display: none;">
+                <!-- Learner Classification Panels -->
+                <div id="learner-classification-section" style="margin-top: 20px;">
+                    <h3>Learner Classification - CIA Marks</h3>
+                    <p style="color: #666; margin-bottom: 12px;">Upload student data (Excel: Roll, Name, Email) for each class first, then upload assessment marks to classify students as Proactive (≥60%) or Reactive (<60%) and create separate classes for each group.</p>
+
+                    <!-- Section 1: Upload Student Data for Current Class -->
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px;">
+                        <h4>Step 1: Upload Student Data (Excel)</h4>
+                        <p style="color: #666; font-size: 0.9em;">Prepare Excel with columns: Roll, Name, Email</p>
+                        <form id="student-data-upload-form" style="display: flex; gap: 8px; align-items: center;">
+                            <input type="file" id="student-data-file" accept=".xlsx,.xls" style="flex: 1;">
+                            <button type="submit" class="btn-submit">Upload Student Data</button>
+                        </form>
+                        <div id="student-data-status" style="margin-top: 8px; color: #28a745;"></div>
+                    </div>
+
+                    <!-- Section 2: View Uploaded Students -->
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px;">
+                        <h4>Uploaded Students</h4>
+                        <table id="uploaded-students-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #e9ecef;">
+                                    <th style="padding: 8px; border: 1px solid #ddd;">Roll No</th>
+                                    <th style="padding: 8px; border: 1px solid #ddd;">Name</th>
+                                    <th style="padding: 8px; border: 1px solid #ddd;">Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="uploaded-students-body">
+                            </tbody>
+                        </table>
+                        <div id="no-students-msg" style="color: #666; padding: 8px;">No student data uploaded yet.</div>
+                    </div>
+
+                    <!-- Section 3: Classification Results (Proactive vs Reactive) -->
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px;">
+                        <h4>Classification Results (Score ≥60% = Proactive, <60% = Reactive)</h4>
+                        
+                        <div style="display: flex; gap: 16px;">
+                            <!-- Proactive Group -->
+                            <div style="flex: 1; padding: 12px; background: #d4edda; border-radius: 4px; border-left: 4px solid #28a745;">
+                                <h5 style="color: #155724; margin-bottom: 8px;">Proactive Learners (≥60%)</h5>
+                                <div id="proactive-list" style="max-height: 250px; overflow-y: auto;">
+                                    <div style="color: #666; padding: 8px;">No students yet.</div>
+                                </div>
+                                <button id="create-proactive-class-btn" class="btn-submit" style="margin-top: 8px; width: 100%; background: #28a745;">Create Proactive Class</button>
+                                <button id="bulk-invite-proactive-btn" class="btn-submit" style="margin-top: 4px; width: 100%; background: #20c997;">Bulk Invite Proactive</button>
+                            </div>
+
+                            <!-- Reactive Group -->
+                            <div style="flex: 1; padding: 12px; background: #f8d7da; border-radius: 4px; border-left: 4px solid #dc3545;">
+                                <h5 style="color: #721c24; margin-bottom: 8px;">Reactive Learners (<60%)</h5>
+                                <div id="reactive-list" style="max-height: 250px; overflow-y: auto;">
+                                    <div style="color: #666; padding: 8px;">No students yet.</div>
+                                </div>
+                                <button id="create-reactive-class-btn" class="btn-submit" style="margin-top: 8px; width: 100%; background: #dc3545;">Create Reactive Class</button>
+                                <button id="bulk-invite-reactive-btn" class="btn-submit" style="margin-top: 4px; width: 100%; background: #fd7e14;">Bulk Invite Reactive</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Classroom Assignments -->
+                    <div id="classroom-assignments-section" style="margin-top: 24px; padding: 16px; background: #fff; border: 1px solid #ddd; border-radius: 6px;">
+                        <h3 style="border-bottom: 2px solid var(--christ-blue); padding-bottom: 8px; margin-bottom: 16px;">Classroom Assignments</h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <!-- Create Assignment -->
+                            <div style="background: #f8f9fa; padding: 16px; border-radius: 6px;">
+                                <h4>Create New Assignment</h4>
+                                <p style="color: #666; margin-bottom: 12px;">Create specialized assignments for proactive and reactive learners.</p>
+                                <a href="create-assignment.html" style="text-decoration: none;">
+                                    <button class="btn-submit" style="width: 100%;">➕ Create New Assignment</button>
+                                </a>
+                                <div style="margin-top: 12px; padding: 10px; background: #fff; border-radius: 4px;">
+                                    <strong>Assignment Types:</strong>
+                                    <ul style="margin: 8px 0 0 0; color: #666; font-size: 12px;">
+                                        <li><strong>Proactive:</strong> Research Paper, Workshop, Seminar, Case Study, Presentation</li>
+                                        <li><strong>Reactive:</strong> Remedial, Extra Practice, Doubt Clearing, Tutorial</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Auto Initialize Sample Assignments -->
+                            <div style="background: #e7f3ff; padding: 16px; border-radius: 6px; border-left: 4px solid #0066cc;">
+                                <h4>📊 Initialize Sample Assignments</h4>
+                                <p style="color: #666; margin-bottom: 12px; font-size: 13px;">Auto-generates 8 sample assignments (4 proactive, 4 reactive) with students automatically classified based on their performance percentage. This demonstrates the full Active Assignments system.</p>
+                                <button id="seed-assignments-btn" class="btn-submit" style="width: 100%; background: #0066cc; margin-bottom: 10px;">🌱 Seed Sample Assignments (8)</button>
+                                <div id="seed-status" style="font-size: 12px;"></div>
+                                <div style="margin-top: 12px; padding: 10px; background: #fff; border-radius: 4px; font-size: 12px;">
+                                    <strong>What this creates:</strong>
+                                    <ul style="margin: 8px 0 0 0; color: #666;">
+                                        <li><strong>Proactive:</strong> Research Paper, Hackathon, Mini Project, Technical Workshop</li>
+                                        <li><strong>Reactive:</strong> Remedial, Re-test, Coding Practice, Seminar</li>
+                                        <li><strong>Auto-classified:</strong> Students with ≥50% → Proactive | <50% → Reactive</li>
+                                        <li><strong>Auto-allocated:</strong> Each assignment auto-assigned to matching student group</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 🔹 Active Assignments Section -->
+                            <div id="active-assignments-full-section">
+                                <h3 style="margin-bottom: 16px;">🔹 Active Assignments</h3>
+                                <p style="color: #666; margin-bottom: 12px;">Published, not expired, and not closed assignments. Click "View Details" for full monitoring information.</p>
+
+                                <!-- Assignment Cards Container -->
+                                <div id="active-assignment-cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px;">
+                                    <div style="grid-column: 1 / -1; padding: 40px; text-align: center; color: #666; background: #f8f9fa; border-radius: 8px;">
+                                        Loading active assignments...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Assignment Details Modal -->
+    <div id="assignment-details-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background: white; max-width: 900px; margin: 50px auto; border-radius: 12px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="background: var(--christ-blue); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; color: white;" id="modal-assignment-title">Assignment Details</h2>
+                <button onclick="closeAssignmentModal()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            <div style="padding: 20px; overflow-y: auto; flex: 1;">
+                <!-- Assignment Info -->
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <div><strong>Type:</strong> <span id="modal-type"></span></div>
+                        <div><strong>Max Marks:</strong> <span id="modal-marks"></span></div>
+                        <div><strong>Deadline:</strong> <span id="modal-deadline"></span></div>
+                        <div><strong>Status:</strong> <span id="modal-status"></span></div>
+                    </div>
+                    <div style="margin-top: 12px;"><strong>Description:</strong></div>
+                    <p id="modal-description" style="color: #666;"></p>
+                    <div style="margin-top: 12px;"><strong>Submission Link:</strong> <span id="modal-link"></span></div>
+                </div>
+
+                <!-- Submissions List -->
+                <h3 style="margin-bottom: 16px;">Student Submissions</h3>
+                <table id="submissions-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #e9ecef;">
+                            <th style="padding: 10px; text-align: left;">Student Name</th>
+                            <th style="padding: 10px; text-align: left;">Email</th>
+                            <th style="padding: 10px; text-align: left;">Submission</th>
+                            <th style="padding: 10px; text-align: left;">Submitted At</th>
+                            <th style="padding: 10px; text-align: center;">Status</th>
+                            <th style="padding: 10px; text-align: center;">Marks</th>
+                            <th style="padding: 10px; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissions-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+        <script src="auth.js"></script>
+        <!-- Ensure usersDatabase is available to dashboard pages -->
+        <script src="login-script.js"></script>
+        <script src="sample-data.js"></script>
+        <script src="dashboard-script.js"></script>
+        <script src="monitoring-script.js"></script>
+        <script src="active-assignments-script.js"></script>
+        <script src="student-classification.js"></script>
+        <script src="assignment-seed-data.js"></script>
+        <script>
+        // Global state for classroom features
+        let currentStudentRoster = [];
+        let currentAssessmentMarks = [];
+
+        // Local classroom UI helper: load classes for current user and show submissions
+        async function loadLocalClassesForTeacher() {
+            try {
+                const r = await fetch('/api/local/classes');
+                const j = await r.json();
+                if (!j.ok) return;
+                const user = getCurrentUser ? getCurrentUser() : null;
+                const teacherClasses = (j.classes || []).filter(c => user && c.owner === user.username);
+                // Also populate associate dropdown if present
+                const assocSelect = document.getElementById('associate-local-class-select');
+                if (assocSelect) {
+                    // clear existing except placeholder
+                    assocSelect.innerHTML = '<option value="">-- Select Local Class (optional) --</option>';
+                }
+                const container = document.getElementById('local-classes-container');
+                if (!container) return;
+                container.innerHTML = '';
+                if (!teacherClasses.length) { container.innerHTML = '<div style="color:#666">No classes created yet.</div>'; return; }
+                for (const cls of teacherClasses) {
+                    const div = document.createElement('div'); div.style.padding = '8px'; div.style.border = '1px solid #ddd'; div.style.marginBottom = '8px';
+                    div.innerHTML = `<strong>${cls.name}</strong><div style="font-size:0.9em;color:#666">${cls.description||''}</div><div style="margin-top:8px"><button class="view-students-btn" data-id="${cls.id}" style="padding:6px 10px;background:#002147;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-right:4px;">Upload Student Data</button><button class="classify-btn" data-id="${cls.id}" style="padding:6px 10px;background:#ff6b6b;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-right:4px;">Classify & Create Classes</button><button class="view-submissions-btn" data-id="${cls.id}" style="padding:6px 10px;background:var(--christ-blue);color:#fff;border:none;border-radius:4px;cursor:pointer;margin-right:4px;">View Submissions</button> <button class="invite-btn" data-id="${cls.id}" style="padding:6px 10px;background:#28a745;color:#fff;border:none;border-radius:4px;cursor:pointer">Invite Student</button></div><div class="submissions-list" id="subs_${cls.id}" style="margin-top:8px"></div>`;
+                    container.appendChild(div);
+                    // add to associate select
+                    if (assocSelect) {
+                        const opt = document.createElement('option'); opt.value = cls.id; opt.textContent = cls.name + ' (' + cls.id.slice(0,6) + ')';
+                        assocSelect.appendChild(opt);
+                    }
+                }
+                // associate select change handler
+                if (assocSelect) {
+                    assocSelect.addEventListener('change', function(){
+                        const val = this.value;
+                        if (val) {
+                            setCurrentClassIdForClassification(val);
+                            document.getElementById('associated-local-class-info').textContent = 'Associated: ' + this.options[this.selectedIndex].text;
+                        } else {
+                            setCurrentClassIdForClassification('');
+                            document.getElementById('associated-local-class-info').textContent = '';
+                        }
+                    });
+                }
+                // Student data upload handler
+                container.querySelectorAll('.view-students-btn').forEach(btn=>btn.addEventListener('click', async function(){
+                    const classId = this.getAttribute('data-id');
+                    const file = prompt('Enter student data file name to upload (Excel with Roll, Name, Email columns):');
+                    if (!file) return;
+                    // In production, would show file picker. For now, show instructions
+                    alert('Please prepare an Excel file with columns: Roll, Name, Email\nThen upload via the dashboard. (Feature to be integrated with file picker.)');
+                }));
+                // Classify students handler: associate class for classification
+                container.querySelectorAll('.classify-btn').forEach(btn=>btn.addEventListener('click', async function(){
+                    const classId = this.getAttribute('data-id');
+                    try {
+                        // set current class id for classification
+                        if (typeof setCurrentClassIdForClassification === 'function') setCurrentClassIdForClassification(classId);
+                        // set human-readable current class name too
+                        const clsName = this.parentElement.parentElement.querySelector('strong') ? this.parentElement.parentElement.querySelector('strong').textContent : '';
+                        document.body.setAttribute('data-current-class', clsName || '');
+                        document.getElementById('associated-local-class-info').textContent = 'Associated: ' + (clsName || classId.slice(0,6));
+                        alert('Class associated. Now open the subject dashboard to access the Classroom & Classification features.');
+                    } catch (e) { console.warn(e); alert('Could not associate class.'); }
+                }));
+                // View submissions handler
+                container.querySelectorAll('.view-submissions-btn').forEach(btn=>btn.addEventListener('click', async function(){
+                    const id = this.getAttribute('data-id');
+                    const out = document.getElementById('subs_' + id);
+                    out.innerHTML = 'Loading...';
+                    const rr = await fetch('/api/local/submissions?classId=' + encodeURIComponent(id));
+                    const jj = await rr.json();
+                    if (!jj.ok) { out.innerHTML = 'Error loading'; return; }
+                    if (!jj.submissions.length) { out.innerHTML = '<div style="color:#666">No submissions yet.</div>'; return; }
+                    out.innerHTML = '';
+                    jj.submissions.forEach(s=>{
+                        const e = document.createElement('div'); e.style.padding='6px'; e.style.borderBottom='1px solid #eee';
+                        e.innerHTML = `<div><strong>${s.uploaderName}</strong> (${s.uploaderEmail}) - ${s.createdAt}</div><div><a href="/uploads/${s.classId}/${s.storedPath.split('/').pop()}" target="_blank">Download</a> - ${s.filename}</div>`;
+                        out.appendChild(e);
+                    });
+                }));
+                // Invite handler
+                container.querySelectorAll('.invite-btn').forEach(btn=>btn.addEventListener('click', async function(){
+                    const id = this.getAttribute('data-id');
+                    const email = prompt('Student email to invite:'); if (!email) return;
+                    const msg = prompt('Optional message:','Please submit your assignment using the link.');
+                    const res = await fetch('/api/local/invite', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ classId: id, email, message: msg }) });
+                    const j = await res.json(); if (j.ok) alert('Invite created and email sent (if SMTP configured). Link:\n'+ (j.link||'no-link')); else alert('Invite error: '+ JSON.stringify(j));
+                }));
+            } catch(e){ console.warn(e); }
+        }
+        document.addEventListener('DOMContentLoaded', function(){ if (document.getElementById('local-classes-container')) loadLocalClassesForTeacher(); });
+        
+        // Create local class form handling
+        document.addEventListener('DOMContentLoaded', function(){
+          const createBtn = document.getElementById('create-local-class-btn');
+          const formSection = document.getElementById('create-class-form-section');
+          const form = document.getElementById('create-class-form');
+          const cancelBtn = document.getElementById('cancel-create-class-btn');
+          if (!createBtn || !formSection || !form) return;
+          createBtn.addEventListener('click', function(){ formSection.style.display = 'block'; });
+          cancelBtn.addEventListener('click', function(){ formSection.style.display = 'none'; });
+          form.addEventListener('submit', async function(ev){
+            ev.preventDefault();
+            const name = document.getElementById('new-class-name').value.trim();
+            const desc = document.getElementById('new-class-description').value.trim();
+            const user = getCurrentUser ? getCurrentUser() : null;
+            if (!user) { alert('Please log in first'); return; }
+            try {
+              const res = await fetch('/api/local/create-class', {
+                method: 'POST', headers: {'Content-Type':'application/json'}, 
+                body: JSON.stringify({ name, description: desc, owner: user.username })
+              });
+              const j = await res.json();
+              if (j.ok) {
+                alert('Class created: ' + j.class.name);
+                formSection.style.display = 'none';
+                form.reset();
+                loadLocalClassesForTeacher();
+              } else { alert('Error: ' + (j.error || JSON.stringify(j))); }
+            } catch(e){ alert('Create class error'); console.warn(e); }
+          });
+        });
+
+        // Events button handler
+        document.addEventListener('DOMContentLoaded', function(){
+          const eventsBtn = document.getElementById('events-btn');
+          const hodEventsBtn = document.getElementById('hod-events-btn');
+          if (eventsBtn) {
+            eventsBtn.addEventListener('click', function(){
+              window.location.href = 'events.html';
+            });
+          }
+          if (hodEventsBtn) {
+            hodEventsBtn.addEventListener('click', function(){
+              window.location.href = 'events.html';
+            });
+          }
+        });
+
+        // --- NEW: Classroom Logic (Classification & Assignments) ---
+        
+        // 1. Handle Student Data Upload (Roster)
+        const studentUploadForm = document.getElementById('student-data-upload-form');
+        if (studentUploadForm) {
+            studentUploadForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const fileInput = document.getElementById('student-data-file');
+                if (!fileInput.files[0]) return alert('Please select a file');
+                
+                const data = await fileInput.files[0].arrayBuffer();
+                const workbook = XLSX.read(data);
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                currentStudentRoster = jsonData; // Store in memory
+                
+                // Render table
+                const tbody = document.getElementById('uploaded-students-body');
+                tbody.innerHTML = '';
+                jsonData.forEach(student => {
+                    const row = `<tr>
+                        <td>${student.Roll || student['Roll No'] || '-'}</td>
+                        <td>${student.Name || '-'}</td>
+                        <td>${student.Email || '-'}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+                document.getElementById('no-students-msg').style.display = 'none';
+                document.getElementById('student-data-status').textContent = `Uploaded ${jsonData.length} students successfully.`;
+                
+                // Trigger classification if marks exist
+                if (currentAssessmentMarks.length > 0) runClassification();
+            });
+        }
+
+        // 2. Hook into Assessment Upload (This assumes dashboard-script.js populates the table, we scrape it or hook the form)
+        // Since we can't edit dashboard-script.js, we'll add a listener to the assessment upload form here too
+        const assessmentForm = document.getElementById('assessment-upload-form');
+        if (assessmentForm) {
+            assessmentForm.addEventListener('submit', async function(e) {
+                // Allow the main script to run first (setTimeout)
+                setTimeout(async () => {
+                    const fileInput = document.getElementById('assessment-upload-file');
+                    if (fileInput.files[0]) {
+                        const data = await fileInput.files[0].arrayBuffer();
+                        const workbook = XLSX.read(data);
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        currentAssessmentMarks = XLSX.utils.sheet_to_json(worksheet);
+                        runClassification();
+                    }
+                }, 500);
+            });
+        }
+
+        // 3. Classification Logic (40% Threshold)
+        function runClassification() {
+            const maxMarksInput = document.getElementById('assessment-max-marks-input');
+            const maxMarks = parseFloat(maxMarksInput.value) || 100;
+            const threshold = maxMarks * 0.40; // 40% Threshold
+
+            const proactiveList = document.getElementById('proactive-list');
+            const reactiveList = document.getElementById('reactive-list');
+            proactiveList.innerHTML = '';
+            reactiveList.innerHTML = '';
+
+            let pCount = 0, rCount = 0;
+
+            currentAssessmentMarks.forEach(record => {
+                const score = parseFloat(record.Marks || record.Score || 0);
+                const roll = record.Roll || record['Roll No'];
+                const name = record.Name;
+                
+                // Find email from roster
+                const studentInfo = currentStudentRoster.find(s => (s.Roll == roll || s['Roll No'] == roll));
+                const email = studentInfo ? studentInfo.Email : 'No email';
+
+                const itemHtml = `<div style="padding: 6px; border-bottom: 1px solid rgba(0,0,0,0.1); font-size: 0.9em;">
+                    <strong>${name}</strong> (${roll})<br>
+                    Score: ${score}/${maxMarks} <span style="color: #666;">| ${email}</span>
+                </div>`;
+
+                if (score >= threshold) {
+                    proactiveList.innerHTML += itemHtml;
+                    pCount++;
+                } else {
+                    reactiveList.innerHTML += itemHtml;
+                    rCount++;
+                }
+            });
+
+            if (pCount === 0) proactiveList.innerHTML = '<div style="color: #666; padding: 8px;">No students in this category.</div>';
+            if (rCount === 0) reactiveList.innerHTML = '<div style="color: #666; padding: 8px;">No students in this category.</div>';
+        }
+
+        // 4. Assignment Creation Logic
+        const assignForm = document.getElementById('create-assignment-form');
+        if (assignForm) {
+            assignForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const title = document.getElementById('assign-title').value;
+                const target = document.getElementById('assign-target').value;
+                
+                // Simulate creating an assignment ID
+                const assignId = 'asgn_' + Date.now();
+                const classId = document.getElementById('associate-local-class-select') ? document.getElementById('associate-local-class-select').value : 'general';
+                
+                // Generate Link (pointing to invite.html)
+                // In a real app, this would save to DB. Here we generate a link that carries context.
+                const link = `${window.location.origin}/invite.html?token=${assignId}&classId=${classId}&title=${encodeURIComponent(title)}`;
+
+                const list = document.getElementById('assignments-list-container');
+                if (list.querySelector('p')) list.innerHTML = ''; // Clear "no assignments" msg
+
+                const assignDiv = document.createElement('div');
+                assignDiv.style.cssText = "background: #f1f3f5; padding: 10px; margin-bottom: 8px; border-radius: 4px; border-left: 4px solid var(--christ-blue);";
+                assignDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong>${title}</strong>
+                            <div style="font-size: 0.85em; color: #666;">Target: ${target.toUpperCase()}</div>
+                        </div>
+                        <button onclick="window.open('${link}', '_blank')" style="padding: 4px 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Open Upload Link</button>
+                    </div>
+                    <div style="margin-top: 6px; font-size: 0.85em;">
+                        Link: <input type="text" value="${link}" readonly style="width: 200px; padding: 2px;">
+                        <button onclick="navigator.clipboard.writeText('${link}')" style="cursor:pointer; border:1px solid #ccc; background:#fff;">Copy</button>
+                    </div>
+                    <div style="margin-top: 8px; border-top: 1px solid #ddd; padding-top: 4px;">
+                        <button class="view-subs-btn" style="font-size: 0.85em; color: var(--christ-blue); background: none; border: none; cursor: pointer; text-decoration: underline;">View Submissions</button>
+                        <div class="subs-container" style="display:none; margin-top:4px; padding:4px; background:#fff;">Loading submissions...</div>
+                    </div>
+                `;
+
+                // Add toggle for submissions (Reads from localStorage simulation)
+                assignDiv.querySelector('.view-subs-btn').setAttribute('data-assign-id', assignId);
+                assignDiv.querySelector('.view-subs-btn').addEventListener('click', function() {
+                    const id = this.getAttribute('data-assign-id');
+                    const cont = assignDiv.querySelector('.subs-container');
+                    cont.style.display = cont.style.display === 'none' ? 'block' : 'none';
+                    
+                    // Load from local storage mock
+                    const allSubs = JSON.parse(localStorage.getItem('mock_submissions') || '[]');
+                    const mySubs = allSubs.filter(s => s.token === id);
+                    
+                    if (mySubs.length === 0) {
+                        cont.innerHTML = '<em>No submissions yet.</em>';
+                    } else {
+                        cont.innerHTML = mySubs.map(s => 
+                            `<div style="padding:4px; border-bottom:1px solid #eee; font-size:0.9em;">
+                                <strong>${s.name}</strong> <span style="color:#666">&lt;${s.email}&gt;</span><br>
+                                File: ${s.filename} <span style="color:#999; font-size:0.85em;">(${s.date})</span>
+                             </div>`
+                        ).join('');
+                    }
+                });
+
+                list.prepend(assignDiv);
+                assignForm.reset();
+            });
+        }
+
+        // ===== TAB SWITCHING FUNCTIONALITY =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const subjectViewTabs = document.querySelectorAll('#subject-view-tabs .tab-btn');
+            subjectViewTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    subjectViewTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const performanceWrapper = document.getElementById('performance-content-wrapper');
+                    const classroomWrapper = document.getElementById('classroom-content-wrapper');
+                    
+                    if (performanceWrapper) performanceWrapper.style.display = view === 'performance' ? 'block' : 'none';
+                    if (classroomWrapper) classroomWrapper.style.display = view === 'classroom' ? 'block' : 'none';
+                    
+                    if (view === 'classroom' && typeof initActiveAssignments === 'function') {
+                        // Initialize Active Assignments when switching to classroom view
+                        setTimeout(() => initActiveAssignments(), 100);
+                    }
+                });
+            });
+
+            // ===== SEED ASSIGNMENTS BUTTON =====
+            const seedBtn = document.getElementById('seed-assignments-btn');
+            if (seedBtn) {
+                seedBtn.addEventListener('click', async function() {
+                    seedBtn.disabled = true;
+                    seedBtn.textContent = '🔄 Generating...';
+                    
+                    const statusDiv = document.getElementById('seed-status');
+                    statusDiv.innerHTML = '<div style="color: #0066cc;">⏳ Initializing sample assignments...</div>';
+                    
+                    try {
+                        // Call seed initialization
+                        if (typeof initializeSeededAssignments === 'function') {
+                            const result = await initializeSeededAssignments();
+                            displaySeedInitResult(result);
+                        } else {
+                            statusDiv.innerHTML = '<div style="color: #dc3545;">❌ Error: Seed function not loaded</div>';
+                        }
+                    } catch (error) {
+                        statusDiv.innerHTML = `<div style="color: #dc3545;">❌ Error: ${error.message}</div>`;
+                        console.error('Seed initialization error:', error);
+                    } finally {
+                        seedBtn.disabled = false;
+                        seedBtn.textContent = '🌱 Seed Sample Assignments (8)';
+                    }
+                });
+            }
+        });
+        </script>
+</body>
+</html>

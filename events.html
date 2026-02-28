@@ -1,0 +1,351 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Event Management - Department Events</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="events-styles.css">
+</head>
+<body>
+  <div class="nav-header">
+    <h1>📅 Department Events Management</h1>
+    <div class="nav-buttons">
+      <button id="back-btn" class="btn-secondary">← Back</button>
+      <span id="user-info" class="user-info"></span>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="create-event">Create Event</button>
+      <button class="tab-btn" data-tab="all-events">All Events</button>
+      <button class="tab-btn" data-tab="my-events">My Events</button>
+      <button class="tab-btn" data-tab="hod-approval">HOD Approvals</button>
+      <button class="tab-btn" data-tab="notifications">
+        Notifications
+        <span id="notification-badge" class="badge" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <!-- Create Event Tab -->
+    <div id="create-event" class="tab-content active">
+      <div class="card">
+        <h2>Create New Event</h2>
+        <p id="create-event-note" style="color:#666; margin-bottom:16px; font-size:14px;"></p>
+        <form id="create-event-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Event Name *</label>
+              <input type="text" id="event-name" required placeholder="e.g., Tech Conference 2024">
+            </div>
+            <div class="form-group">
+              <label>Department *</label>
+              <input type="text" id="event-department" placeholder="e.g., Computer Science">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description *</label>
+            <textarea id="event-description" required placeholder="Detailed description of the event..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Venue *</label>
+              <input type="text" id="event-venue" required placeholder="e.g., Auditorium Hall A">
+            </div>
+            <div class="form-group">
+              <label>Date *</label>
+              <input type="date" id="event-date" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Time *</label>
+              <input type="time" id="event-start-time" required>
+            </div>
+            <div class="form-group">
+              <label>End Time *</label>
+              <input type="time" id="event-end-time" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Event Poster *</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="event-poster" accept="image/*" required>
+              <span class="file-label">Choose poster image</span>
+            </div>
+            <small>Upload a poster/flyer for the event</small>
+          </div>
+
+          <div class="form-group">
+            <label>Venue Confirmation Screenshot *</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="venue-confirmation" accept="image/*" required>
+              <span class="file-label">Choose venue confirmation</span>
+            </div>
+            <small>Screenshot confirming venue booking/availability</small>
+          </div>
+
+          <div class="form-group">
+            <label>Guest Confirmation Screenshot *</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="guest-confirmation" accept="image/*" required>
+              <span class="file-label">Choose guest confirmation</span>
+            </div>
+            <small>Screenshot of guest confirmation to attend</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Submit Event for Approval</button>
+            <button type="reset" class="btn-secondary">Clear Form</button>
+          </div>
+          <div id="create-status" class="status-message"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- All Events Tab -->
+    <div id="all-events" class="tab-content">
+      <div class="card">
+        <h2>All Events</h2>
+        <div class="filter-controls">
+          <select id="filter-status">
+            <option value="">All Status</option>
+            <option value="pending">Pending Approval</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <select id="filter-department">
+            <option value="">All Departments</option>
+          </select>
+        </div>
+        <div id="all-events-list" class="events-grid">
+          <p class="loading">Loading events...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Events Tab -->
+    <div id="my-events" class="tab-content">
+      <div class="card">
+        <h2>My Events</h2>
+        <div id="my-events-list" class="events-grid">
+          <p class="loading">Loading your events...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOD Approval Tab -->
+    <div id="hod-approval" class="tab-content">
+      <div class="card">
+        <h2>Pending Events for Approval</h2>
+        <p style="color: #666; margin-bottom: 16px;">Review and approve/reject pending events. You can add comments about the poster.</p>
+        <div id="pending-events-list" class="events-grid">
+          <p class="loading">Loading pending events...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div id="notifications" class="tab-content">
+      <div class="card">
+        <h2>Notifications</h2>
+        <div id="notifications-list" class="notifications-list">
+          <p class="loading">Loading notifications...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Detail Modal -->
+  <div id="event-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-event-title"></h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Event Details Section -->
+        <div class="event-detail-section">
+          <h3>Event Details</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <strong>Date:</strong> <span id="modal-date"></span>
+            </div>
+            <div class="detail-item">
+              <strong>Time:</strong> <span id="modal-time"></span>
+            </div>
+            <div class="detail-item">
+              <strong>Venue:</strong> <span id="modal-venue"></span>
+            </div>
+            <div class="detail-item">
+              <strong>Department:</strong> <span id="modal-department"></span>
+            </div>
+            <div class="detail-item">
+              <strong>Created By:</strong> <span id="modal-created-by"></span>
+            </div>
+            <div class="detail-item">
+              <strong>Status:</strong> <span id="modal-status" class="status-badge"></span>
+            </div>
+          </div>
+          
+          <div style="margin-top: 16px;">
+            <p><strong>Description:</strong></p>
+            <p id="modal-description" style="color: #666;"></p>
+          </div>
+
+          <!-- Attachments -->
+          <div style="margin-top: 16px;">
+            <h4>Event Documents</h4>
+            <div class="attachments-grid">
+              <div class="attachment-item">
+                <strong>Poster:</strong><br>
+                <a id="modal-poster-link" href="#" target="_blank" class="file-link">View Poster</a>
+              </div>
+              <div class="attachment-item">
+                <strong>Venue Confirmation:</strong><br>
+                <a id="modal-venue-conf-link" href="#" target="_blank" class="file-link">View Confirmation</a>
+              </div>
+              <div class="attachment-item">
+                <strong>Guest Confirmation:</strong><br>
+                <a id="modal-guest-conf-link" href="#" target="_blank" class="file-link">View Confirmation</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Status Management Section -->
+        <div id="event-status-section" class="event-detail-section" style="display: none;">
+          <h3>Event Status Management</h3>
+          <div class="status-management">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span id="current-status-display" style="font-weight: bold;">Status: <span id="event-current-status">Upcoming</span></span>
+              <button id="mark-completed-btn" class="btn-success" style="display: none;">✓ Mark as Completed</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Submission Status Section -->
+        <div id="submission-status-section" class="event-detail-section" style="display: none;">
+          <h3>📋 Event Report Submission Status</h3>
+          <div class="submission-status-grid">
+            <div class="status-item">
+              <strong>Event Date:</strong>
+              <span id="submission-event-date"></span>
+            </div>
+            <div class="status-item">
+              <strong>Report Deadline:</strong>
+              <span id="submission-deadline" style="font-weight: bold; color: #e74c3c;"></span>
+            </div>
+            <div class="status-item">
+              <strong>Submission Status:</strong>
+              <span id="submission-status-badge" class="status-badge"></span>
+            </div>
+            <div class="status-item">
+              <strong>Hosted By:</strong>
+              <span id="submission-hosted-by"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Report Submission Form (for hosting teacher) -->
+        <div id="event-submission-form-section" class="event-detail-section" style="display: none;">
+          <h3>📤 Submit Event Report</h3>
+          <p style="color: #666; margin-bottom: 16px; font-size: 14px;">
+            Submit the event report documents. Deadline: <span id="form-deadline"></span>
+          </p>
+          <form id="event-submission-form">
+            <div class="form-group">
+              <label>Event Report (PDF/DOC) *</label>
+              <div class="file-input-wrapper">
+                <input type="file" id="submission-report-file" accept=".pdf,.doc,.docx" required>
+                <span class="file-label">Choose report file</span>
+              </div>
+              <small>Comprehensive event report</small>
+            </div>
+
+            <div class="form-group">
+              <label>Event Photos (Multiple) *</label>
+              <div class="file-input-wrapper">
+                <input type="file" id="submission-event-photos" accept="image/*" multiple required>
+                <span class="file-label">Choose photos</span>
+              </div>
+              <small>Upload multiple photos from the event</small>
+            </div>
+
+            <div class="form-group">
+              <label>Newsletter Document *</label>
+              <div class="file-input-wrapper">
+                <input type="file" id="submission-newsletter" accept=".pdf,.doc,.docx" required>
+                <span class="file-label">Choose newsletter</span>
+              </div>
+              <small>Newsletter or summary document</small>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Highlight Photo 1 *</label>
+                <div class="file-input-wrapper">
+                  <input type="file" id="submission-highlight-1" accept="image/*" required>
+                  <span class="file-label">Choose photo</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Highlight Photo 2 *</label>
+                <div class="file-input-wrapper">
+                  <input type="file" id="submission-highlight-2" accept="image/*" required>
+                  <span class="file-label">Choose photo</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Submit Event Report</button>
+              <button type="reset" class="btn-secondary">Clear Form</button>
+            </div>
+            <div id="submission-status" class="status-message"></div>
+          </form>
+        </div>
+
+        <!-- Event Submission Review Section (for HOD & Newsletter In-Charge) -->
+        <div id="event-submission-review-section" class="event-detail-section" style="display: none;">
+          <h3>📥 Event Report Files</h3>
+          <div class="submission-files-grid">
+            <div id="submission-files-container">
+              <p class="loading">Loading submission files...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="event-detail-section">
+          <h3>Discussion (Comments & Feedback)</h3>
+          <div id="comments-list" class="comments-list">
+            <p class="loading">Loading comments...</p>
+          </div>
+
+          <div class="comment-input-section">
+            <textarea id="comment-text" placeholder="Add a comment..." rows="3"></textarea>
+            <button id="add-comment-btn" class="btn-primary" style="margin-top: 8px;">Post Comment</button>
+          </div>
+        </div>
+
+        <!-- Approval Section (HOD only) -->
+        <div id="approval-section" class="event-detail-section" style="display: none;">
+          <h3>HOD Actions</h3>
+          <div class="approval-buttons">
+            <button id="approve-btn" class="btn-success">✓ Approve Event</button>
+            <button id="reject-btn" class="btn-danger">✗ Reject Event</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="events-script.js"></script>
+</body>
+</html>

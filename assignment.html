@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Assignment</title>
+    <style>
+        :root {
+            --christ-blue: #002147;
+            --christ-gold: #d4af37;
+            --christ-white: #ffffff;
+            --bg-light: #f4f6f9;
+            --success-green: #28a745;
+            --warning-orange: #fd7e14;
+            --danger-red: #dc3545;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(to right, var(--christ-blue), #003366);
+            color: var(--christ-white);
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 4px solid var(--christ-gold);
+        }
+        .header h1 { margin: 0; color: var(--christ-white); }
+        .header p { margin: 5px 0 0 0; color: var(--christ-gold); }
+        .card {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .assignment-details { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 24px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { font-weight: 600; color: var(--christ-blue); }
+        .type-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .type-proactive { background: #d4edda; color: #155724; }
+        .type-reactive { background: #f8d7da; color: #721c24; }
+        .status-active { color: var(--success-green); font-weight: 600; }
+        .status-overdue { color: var(--danger-red); font-weight: 600; }
+        .submission-section { margin-top: 24px; }
+        .student-row { display: flex; align-items: center; gap: 16px; padding: 16px; background: white; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px; }
+        .student-name { font-weight: 600; min-width: 150px; }
+        .upload-area { flex: 1; }
+        .upload-area input[type="file"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
+        .upload-area textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px; font-family: inherit; }
+        .upload-area input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .submit-btn { background: var(--christ-blue); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background 0.2s; }
+        .submit-btn:hover { background: #003366; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .success-message { background: #d4edda; color: #155724; padding: 16px; border-radius: 8px; margin-top: 16px; text-align: center; }
+        .error-message { background: #f8d7da; color: #721c24; padding: 16px; border-radius: 8px; margin-top: 16px; }
+        .timestamp { color: #666; font-size: 14px; margin-top: 8px; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .no-assignment { text-align: center; padding: 40px; color: var(--danger-red); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="assignment-title">Loading Assignment...</h1>
+            <p id="assignment-subtitle">Please wait...</p>
+        </div>
+        <div class="card">
+            <div id="loading" class="loading">Loading assignment details...</div>
+            <div id="assignment-content" style="display: none;">
+                <div class="assignment-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span id="assignment-type" class="type-badge"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Deadline:</span>
+                        <span id="assignment-deadline"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Maximum Marks:</span>
+                        <span id="assignment-marks"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span id="assignment-status"></span>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <span class="detail-label">Description:</span>
+                        <p id="assignment-description" style="color: #666; margin-top: 8px;"></p>
+                    </div>
+                </div>
+                <div class="submission-section">
+                    <h3 style="color: var(--christ-blue); margin-bottom: 16px;">Your Submission</h3>
+                    <div id="student-submission-form">
+                        <div class="student-row">
+                            <div class="student-name" id="student-name-display">Student Name</div>
+                            <div class="upload-area">
+                                <div id="file-upload-section">
+                                    <input type="file" id="submission-file" accept=".pdf,.zip,.docx,.doc">
+                                    <p style="color: #666; font-size: 12px; margin-top: 4px;">Accepted formats: PDF, ZIP, DOCX</p>
+                                </div>
+                                <div id="text-upload-section" style="display: none;">
+                                    <textarea id="submission-text" placeholder="Enter your answer here..."></textarea>
+                                </div>
+                                <div id="link-upload-section" style="display: none;">
+                                    <input type="text" id="submission-link" placeholder="Enter your GitHub/Drive link...">
+                                </div>
+                            </div>
+                        </div>
+                        <button id="submit-btn" class="submit-btn">Submit Assignment</button>
+                    </div>
+                    <div id="submission-success" class="success-message" style="display: none;">
+                        <h3>Assignment Submitted Successfully!</h3>
+                        <p>Your submission has been recorded.</p>
+                        <p class="timestamp" id="submission-timestamp"></p>
+                    </div>
+                    <div id="submission-error" class="error-message" style="display: none;"></div>
+                </div>
+            </div>
+            <div id="no-assignment" class="no-assignment" style="display: none;">
+                <h3>Assignment Not Found</h3>
+                <p>The assignment you're looking for doesn't exist or has been removed.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        let assignment = null;
+        let studentSubmission = null;
+        
+        async function loadAssignment() {
+            if (!token) {
+                showError('No assignment token provided');
+                return;
+            }
+            try {
+                const response = await fetch('/api/assignments/by-token/' + token);
+                const data = await response.json();
+                if (data.ok && data.assignment) {
+                    assignment = data.assignment;
+                    renderAssignment();
+                    checkExistingSubmission();
+                } else {
+                    loadSampleAssignment();
+                }
+            } catch (error) {
+                loadSampleAssignment();
+            }
+        }
+        
+        function loadSampleAssignment() {
+            const sampleAssignments = {
+                'asgn_a1b2c3d4': { id: 'asgn-proactive-001', token: 'asgn_a1b2c3d4', title: 'Research Paper on AI Ethics', type: 'proactive', description: 'Write a comprehensive research paper (2000-2500 words) on the ethical implications of Artificial Intelligence in modern society. Include references and proper citations.', deadline: '2025-02-15', maxMarks: 100, submissionType: 'file', status: 'active' },
+                'asgn_e5f6g7h8': { id: 'asgn-proactive-002', token: 'asgn_e5f6g7h8', title: 'Hackathon - Smart Campus Solution', type: 'proactive', description: 'Participate in a 48-hour hackathon to develop innovative solutions for a smart campus.', deadline: '2025-02-28', maxMarks: 100, submissionType: 'link', status: 'active' }
+            };
+            assignment = sampleAssignments[token];
+            if (assignment) {
+                renderAssignment();
+                checkExistingSubmission();
+            } else {
+                showError('Assignment not found');
+            }
+        }
+        
+        function renderAssignment() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('assignment-content').style.display = 'block';
+            document.getElementById('assignment-title').textContent = assignment.title;
+            document.getElementById('assignment-subtitle').textContent = 'Submit your work below';
+            
+            const typeEl = document.getElementById('assignment-type');
+            typeEl.textContent = assignment.type === 'proactive' ? 'Proactive' : 'Reactive';
+            typeEl.className = 'type-badge ' + (assignment.type === 'proactive' ? 'type-proactive' : 'type-reactive');
+            
+            const deadline = new Date(assignment.deadline);
+            document.getElementById('assignment-deadline').textContent = deadline.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            const now = new Date();
+            const isOverdue = now > deadline;
+            
+            document.getElementById('assignment-marks').textContent = assignment.maxMarks + ' marks';
+            
+            const statusEl = document.getElementById('assignment-status');
+            if (isOverdue) {
+                statusEl.textContent = 'Overdue';
+                statusEl.className = 'status-overdue';
+            } else {
+                statusEl.textContent = 'Active';
+                statusEl.className = 'status-active';
+            }
+            
+            document.getElementById('assignment-description').textContent = assignment.description || 'No description provided.';
+            
+            const submissionType = assignment.submissionType || 'file';
+            document.getElementById('file-upload-section').style.display = submissionType === 'file' ? 'block' : 'none';
+            document.getElementById('text-upload-section').style.display = submissionType === 'text' ? 'block' : 'none';
+            document.getElementById('link-upload-section').style.display = submissionType === 'link' ? 'block' : 'none';
+            
+            const studentName = localStorage.getItem('studentName') || 'Demo Student';
+            document.getElementById('student-name-display').textContent = studentName;
+            
+            if (isOverdue) {
+                document.getElementById('submit-btn').disabled = true;
+                document.getElementById('submit-btn').textContent = 'Deadline Passed';
+            }
+        }
+        
+        function checkExistingSubmission() {
+            const submissions = JSON.parse(localStorage.getItem('assignment_submissions') || '[]');
+            studentSubmission = submissions.find(s => s.token === token);
+            if (studentSubmission) {
+                showSubmissionSuccess();
+            }
+        }
+        
+        async function submitAssignment() {
+            const submitBtn = document.getElementById('submit-btn');
+            const errorEl = document.getElementById('submission-error');
+            const submissionType = assignment.submissionType || 'file';
+            
+            let submissionData = {
+                token: token,
+                assignmentId: assignment.id,
+                assignmentTitle: assignment.title,
+                studentName: document.getElementById('student-name-display').textContent,
+                submittedAt: new Date().toISOString(),
+                type: submissionType
+            };
+            
+            if (submissionType === 'file') {
+                const fileInput = document.getElementById('submission-file');
+                if (!fileInput.files[0]) {
+                    errorEl.textContent = 'Please select a file to upload';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                submissionData.filename = fileInput.files[0].name;
+                submissionData.fileSize = fileInput.files[0].size;
+            } else if (submissionType === 'text') {
+                const text = document.getElementById('submission-text').value.trim();
+                if (!text) {
+                    errorEl.textContent = 'Please enter your response';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                submissionData.textResponse = text;
+            } else if (submissionType === 'link') {
+                const link = document.getElementById('submission-link').value.trim();
+                if (!link) {
+                    errorEl.textContent = 'Please enter your submission link';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                submissionData.linkResponse = link;
+            }
+            
+            errorEl.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const submissions = JSON.parse(localStorage.getItem('assignment_submissions') || '[]');
+            submissions.push(submissionData);
+            localStorage.setItem('assignment_submissions', JSON.stringify(submissions));
+            
+            studentSubmission = submissionData;
+            showSubmissionSuccess();
+        }
+        
+        function showSubmissionSuccess() {
+            document.getElementById('student-submission-form').style.display = 'none';
+            document.getElementById('submission-success').style.display = 'block';
+            
+            const timestamp = new Date(studentSubmission.submittedAt);
+            document.getElementById('submission-timestamp').textContent = 'Submitted on: ' + timestamp.toLocaleString('en-IN');
+            
+            let submittedInfo = '';
+            if (studentSubmission.filename) submittedInfo = 'File: ' + studentSubmission.filename;
+            else if (studentSubmission.textResponse) submittedInfo = 'Text response submitted';
+            else if (studentSubmission.linkResponse) submittedInfo = 'Link: ' + studentSubmission.linkResponse;
+            
+            document.getElementById('submission-success').innerHTML += '<p style="margin-top: 8px;">' + submittedInfo + '</p>';
+        }
+        
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('assignment-content').style.display = 'none';
+            document.getElementById('no-assignment').style.display = 'block';
+            document.getElementById('no-assignment').innerHTML = '<h3>Error</h3><p>' + message + '</p>';
+        }
+        
+        document.getElementById('submit-btn').addEventListener('click', submitAssignment);
+        loadAssignment();
+    </script>
+</body>
+</html>
