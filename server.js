@@ -30,6 +30,9 @@ const EVENT_SUBMISSIONS_FILE = path.join(__dirname, 'data', 'eventSubmissions.js
 const EVENT_TASKS_FILE = path.join(__dirname, 'data', 'eventTasks.json');
 const CLASSROOM_BASE = 'https://classroom.googleapis.com/v1';
 
+// Ensure the data directory exists before writing any files into it
+try { fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true }); } catch(e) { console.warn('Failed to create data directory - server may not start correctly', e); }
+
 // Ensure data file exists
 if (!fs.existsSync(COURSES_FILE)) {
   try { fs.writeFileSync(COURSES_FILE, '[]', 'utf8'); } catch (e) { console.warn('Could not create data file', e); }
